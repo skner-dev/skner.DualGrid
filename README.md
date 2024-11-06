@@ -24,9 +24,9 @@ These are the big reasons (in my view) why using this approach is powerful:
 
 I won't go into detail here, because this concept is already very well explained:
 
+- [Jess Hammer's Youtube Dual-Grid Tutorial](https://youtu.be/jEWFSv3ivTg)
 - [Oskar Stålberg's Twitter Post](https://x.com/OskSta/status/1448248658865049605)
 - [ThinMatrix's Terrain Generation Devlog](https://youtu.be/buKQjkad2I0?t=233)
-- [Jess Hammer's Youtube Dual-Grid Tutorial](https://youtu.be/jEWFSv3ivTg)
 
 ## Getting started
 
