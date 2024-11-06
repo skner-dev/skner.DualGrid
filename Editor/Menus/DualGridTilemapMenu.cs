@@ -10,7 +10,7 @@ namespace skner.DualGrid.Editor
         [MenuItem("GameObject/2D Object/Tilemap/Dual Grid Tilemap ", false, 0)]
         private static void CreateDualGridTilemapMenu()
         {
-            Grid selectedGrid = Selection.activeGameObject.GetComponent<Grid>();
+            Grid selectedGrid = Selection.activeGameObject?.GetComponent<Grid>();
             bool isGridSelected = selectedGrid != null;
 
             var newDualGrid = isGridSelected ? selectedGrid : CreateDualGrid();
