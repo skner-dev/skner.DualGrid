@@ -38,7 +38,7 @@ In the above screenshot, we have some visual guidelines:
 - 🔵 The blue outline represents the ___filled_ Data Tilemap__.
 - 🟢 The green outlines represent the ___filled_ Render Tilemap__.
 
-We paint a single tile in the __Data Tilemap__ and 4 tiles are used to visually represent it in the __Render Tilemap__.
+We paint a single tile in the __Data Tilemap__ and 4 tiles are used to visually represent it in the __Render Tilemap__. By offsetting the __Render Tilemap__ by half a unit, we get this nice overlap, where each Render tile represents the intersection of 4 Data tiles.
 
 With this approach, we can make any shape we want:
 
