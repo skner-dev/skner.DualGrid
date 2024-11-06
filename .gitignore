@@ -79,6 +79,8 @@ Scenes.meta
 Settings/
 Settings.meta
 DefaultVolumeProfile.asset
+DefaultVolumeProfile.asset.meta
 UniversalRenderPipelineGlobalSettings.asset
+UniversalRenderPipelineGlobalSettings.asset.meta
 LICENSE.txt.meta
 README.md.meta
