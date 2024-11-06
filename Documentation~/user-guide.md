@@ -21,7 +21,7 @@ Consider the following tiles from the above example tilesheet:
 ![](Images/example-tile-bottom-left.png) ‎ ‎ ‎ ‎ 
 ![](Images/example-tile-bottom-right.png) ‎ ‎ ‎ ‎ 
 
-These tiles can be arranged to make a single tile:
+These tiles can be arranged to visually represent the 4 corners of a 1x1 square tile:
 
 ![](Images/example-tile-bottom-right.png) ‎ ‎ ‎ ‎ 
 ![](Images/example-tile-bottom-left.png)
