@@ -1,0 +1,20 @@
+{
+    "name": "skner.DualGrid.Editor",
+    "rootNamespace": "skner.DualGrid.Editor",
+    "references": [
+        "GUID:1d51bad7864b1c545a71cbe935ab1a6a",
+        "GUID:613783dc1674e844b87788ea74ede0f6",
+        "GUID:cbdf09464b6b87745be748a67e5a21a0"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
