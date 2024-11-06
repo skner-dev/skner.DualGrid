@@ -116,6 +116,6 @@ And now you can paint over the __Data Tilemap__ and magic will take care of the 
 
 ## Multiple tilemaps
 
-You can have multiple tilemaps for more than one tilesheet. As of yet, __there's no support to have different tilesheets per Data Tilemap__, but I might try to implement this in the future.
+You can have multiple tilemaps for more than one grid. As of yet, __there's no support to have different tilesheets per Data Tilemap__, but I might try to implement this in the future.
 
 To do so, you can share a grid, but __never__ share a __Data Tilemap__. 
