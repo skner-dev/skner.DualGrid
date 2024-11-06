@@ -6,7 +6,7 @@ Welcome to the repository of my Dual Grid implementation for Unity.
 
 Here's what this library can do:
 
-- ✨ __Fully working Dual Grid System__: Paint a Data Tilemap and it all gets visually updated in a Render Tilemap.
+- 🔥 __Fully working Dual Grid System__: Paint a Data Tilemap and it all gets visually updated in a Render Tilemap.
 - 🔄 __Automatic Setup__: It takes seconds to setup a dual grid system;
 - 🤝 __Full Unity Integration__: Full integration with Unity's Tilemap and Rule Tiles;
 - 🧩 __Rule Tile Creation__: Streamlined rule tile creation with full rule definition;
@@ -17,6 +17,11 @@ The Dual Grid Tilemap is a method to render tiles using two grids, instead of on
 
 Many people use different terms for each grid, but in this library you'll find the __Data Tilemap__ and the __Render Tilemap__.
 
+These are the big reasons (in my view) why using this approach is powerful:
+
+- 🚀 __Scalability__: Create all tilemap combinations with only 16 tiles, saving a lot of work.
+- ✨ __Corner design flexibility__: Fully round corners not possible with traditional tilemap structures.
+
 I won't go into detail here, because this concept is already very well explained:
 
 - [Oskar Stålberg's Twitter Post](https://x.com/OskSta/status/1448248658865049605)
@@ -25,7 +30,11 @@ I won't go into detail here, because this concept is already very well explained
 
 ## Getting started
 
-To start using this library, check the [getting started](Documentation/getting-started.md) page. It has a guide on how to __install__ and __setup__ the library.
+To start using this library, check the [installation guide](Documentation~/installation-guide.md). It has a guide on how to __install__ and __setup__ the library with a detailed explanation.
+
+To start using it, I recommend the [user guide](Documentation~/user-guide.md). It's a page with an article on how to use the dual grid with detailed explanations.
+
+If you're looking for quick step-by-step usage instructions, there's also a [cheatsheet](Documentation~/cheatsheet.md).
 
 ## Dependencies
 

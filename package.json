@@ -11,6 +11,10 @@
     "name": "skner",
     "email": "sknerdev@outlook.com"
   },
+  "category": "2D",
+  "dependencies": {
+    "com.unity.2d.tilemap.extras": "4.0.2"
+  },
   "samples": [
     {
       "displayName": "Example Usage",
