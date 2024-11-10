@@ -70,15 +70,3 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-
-# Additional unnecessary folders and files
-Resources/
-Resources.meta
-Scenes/
-Scenes.meta
-Settings/
-Settings.meta
-DefaultVolumeProfile.asset
-DefaultVolumeProfile.asset.meta
-UniversalRenderPipelineGlobalSettings.asset
-UniversalRenderPipelineGlobalSettings.asset.meta
