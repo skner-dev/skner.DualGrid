@@ -13,7 +13,7 @@
   },
   "category": "2D",
   "dependencies": {
-    "com.unity.2d.tilemap.extras": "4.0.2"
+    "com.unity.2d.tilemap.extras": "3.1.2"
   },
   "samples": [
     {
