@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2024-11-14
+
+- Downgraded Unity 2D Tilemap Extras dependency from version 4.0.2 to 3.1.2
+- Fixed issues with Samples project
+
 ## [1.0.0] - 2024-11-06
 
 - Initial package release
