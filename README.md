@@ -40,6 +40,8 @@ If you're looking for quick step-by-step usage instructions, there's also a [che
 
 This library depends on [Unity.2D.Tilemap.Extras](https://docs.unity3d.com/Packages/com.unity.2d.tilemap.extras@4.1/manual/index.html). It was tested using version 4.0.2, which comes pre-built when a new 2D Universal Render Pipeline Project is created.
 
+This package is compatible with Unity 2022.1+.
+
 ## Author's note
 
 I knew about the Dual Grid system before, but seeing [Jess Hammer's implementation](https://github.com/jess-hammer/dual-grid-tilemap-system-unity) inspired me to use my programming abilities to make my own implementation, as I couldn't find more anywhere. 
