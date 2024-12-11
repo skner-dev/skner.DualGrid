@@ -2,6 +2,8 @@
 
 Welcome to the repository of my Dual Grid implementation for Unity.
 
+Available in the [Unity Asset Store](https://assetstore.unity.com/preview/301999/1000221)!
+
 ## Features
 
 Here's what this library can do:
