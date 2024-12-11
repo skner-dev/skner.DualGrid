@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2024-12-11
+
+- Fixed build issue due to UnityEditor being used during runtime
+
 ## [1.0.1] - 2024-11-14
 
 - Downgraded Unity 2D Tilemap Extras dependency from version 4.0.2 to 3.1.2
