@@ -2,7 +2,7 @@
 
 Welcome to the repository of my Dual Grid implementation for Unity.
 
-Available in the [Unity Asset Store](https://assetstore.unity.com/preview/301999/1000221)!
+Available in the [Unity Asset Store](https://assetstore.unity.com/packages/2d/skner-s-dual-grid-301999)!
 
 ## Features
 
