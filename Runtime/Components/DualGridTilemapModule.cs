@@ -1,7 +1,6 @@
 ﻿using skner.DualGrid.Extensions;
 using skner.DualGrid.Utils;
 using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -73,8 +72,9 @@ namespace skner.DualGrid
                     Debug.LogError($"Cannot update render tilemap, because tile is not set in dual grid module.", RenderTilemap);
                     return;
                 }
-
-                Undo.RecordObject(RenderTilemap, $"Updated {tileChanges.Length} render tile(s)");
+#if UNITY_EDITOR
+                UnityEditor.Undo.RecordObject(RenderTilemap, $"Updated {tileChanges.Length} render tile(s)");
+#endif
 
                 foreach (Tilemap.SyncTile tileChange in tileChanges)
                 {
@@ -93,8 +93,9 @@ namespace skner.DualGrid
                 Debug.LogError($"Cannot refresh render tilemap, because tile is not set in dual grid module.", RenderTilemap);
                 return;
             }
-
-            Undo.RecordObject(RenderTilemap, "Refreshed render tiles");
+#if UNITY_EDITOR
+            UnityEditor.Undo.RecordObject(RenderTilemap, "Refreshed render tiles");
+#endif
 
             RenderTilemap.ClearAllTiles();
             foreach (var position in DataTilemap.cellBounds.allPositionsWithin)
