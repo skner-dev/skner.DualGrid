@@ -7,6 +7,15 @@ namespace skner.DualGrid.Editor
     [CustomEditor(typeof(Transform))]
     public class RestrictedTransformEditor : UnityEditor.Editor
     {
+        private UnityEditor.Editor defaultEditor;
+
+        private void OnEnable() => defaultEditor = UnityEditor.Editor.CreateEditor(targets, System.Type.GetType("UnityEditor.TransformInspector, UnityEditor"));
+
+        void OnDisable()
+        {
+            if (defaultEditor != null)
+                DestroyImmediate(defaultEditor);
+        }
 
         public override void OnInspectorGUI()
         {
@@ -17,12 +26,12 @@ namespace skner.DualGrid.Editor
             {
                 EditorGUILayout.HelpBox($"Editing is disabled on a RenderTilemap. The transform is managed by the {nameof(DualGridTilemapModule)}.", MessageType.Info);
                 GUI.enabled = false;
-                DrawDefaultInspector();
+                defaultEditor.OnInspectorGUI();
                 GUI.enabled = true;
             }
             else
             {
-                DrawDefaultInspector();
+                defaultEditor.OnInspectorGUI();
             }
         }
 
