@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2025-01-03
+
+- Fixed issue [#5](https://github.com/skner-dev/DualGrid/issues/5): malformed bottom left corner render tile
+
 ## [1.0.2] - 2024-12-11
 
 - Fixed build issue due to UnityEditor being used during runtime
