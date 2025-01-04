@@ -1,8 +1,8 @@
-﻿using System;
+﻿using skner.DualGrid.Utils;
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.UIElements;
 
 namespace skner.DualGrid.Editor
 {
@@ -11,6 +11,14 @@ namespace skner.DualGrid.Editor
     {
 
         private DualGridTilemapModule _targetComponent;
+
+        private Tilemap _dataTilemap;
+        private Tilemap _renderTilemap;
+
+        private bool _showDataTileBoundaries = false;
+
+        private bool _showRenderTileBoundaries = false;
+        private bool _showRenderTileConnections = false;
 
         private void OnEnable()
         {
@@ -26,6 +34,9 @@ namespace skner.DualGrid.Editor
                 CreateRenderTilemapObject();
                 Debug.Log($"Created child RenderTilemap for DualGridTilemapModule {_targetComponent.name}.");
             }
+
+            _dataTilemap = _targetComponent.DataTilemap;
+            _renderTilemap = _targetComponent.RenderTilemap;
 
             DestroyTilemapRendererInDataTilemap();
         }
@@ -54,18 +65,100 @@ namespace skner.DualGrid.Editor
 
         public override void OnInspectorGUI()
         {
-            // Additional custom inspector options could go here if needed
             EditorGUILayout.HelpBox("DualGridTilemapModule manages the RenderTilemap linked to the DataTilemap.", MessageType.Info);
 
             EditorGUI.BeginChangeCheck();
 
             DrawDefaultInspector();
 
-            if (EditorGUI.EndChangeCheck())
+            GUILayout.Space(5);
+            GUILayout.Label("Tools", EditorStyles.boldLabel);
+
+            if (EditorGUI.EndChangeCheck()) // Required so that it can update the tilemap if the rule tile assigned changes
                 _targetComponent.RefreshRenderTiles();
 
             if (GUILayout.Button("Refresh Render Tilemap"))
                 _targetComponent.RefreshRenderTiles();
+
+            GUILayout.Label("Visualization Handles", EditorStyles.boldLabel);
+            _showDataTileBoundaries = EditorGUILayout.Toggle("Data Tile Boundaries", _showDataTileBoundaries);
+            _showRenderTileBoundaries = EditorGUILayout.Toggle("Render Tile Boundaries", _showRenderTileBoundaries);
+            _showRenderTileConnections = EditorGUILayout.Toggle("Render Tile Connections", _showRenderTileConnections);
+        }
+
+        private void OnSceneGUI()
+        {
+            DrawDataTileHandles();
+            DrawRenderTileHandles();
+        }
+
+        private void DrawDataTileHandles()
+        {
+            if (!_showDataTileBoundaries) return;
+
+            foreach (var position in _dataTilemap.cellBounds.allPositionsWithin)
+            {
+                if (!_dataTilemap.HasTile(position)) continue;
+
+                Vector3 tileCenter = _dataTilemap.GetCellCenterWorld(position);
+                
+                Handles.color = Color.green;
+                DrawTileBoundaries(_dataTilemap, tileCenter, thickness: 3);
+            }
+        }
+
+        private void DrawRenderTileHandles()
+        {
+            if (!_showRenderTileBoundaries && !_showRenderTileConnections) return;
+
+            foreach (var renderTilePosition in _renderTilemap.cellBounds.allPositionsWithin)
+            {
+                if (!_renderTilemap.HasTile(renderTilePosition)) continue;
+
+                Vector3 tileCenter = _renderTilemap.GetCellCenterWorld(renderTilePosition);
+
+                Handles.color = Color.yellow;
+                if (_showRenderTileBoundaries) DrawTileBoundaries(_renderTilemap, tileCenter, thickness: 1);
+
+                Handles.color = Color.red;
+                if (_showRenderTileConnections) DrawRenderTileConnections(_dataTilemap, _renderTilemap, renderTilePosition, tileCenter);
+            }
+        }
+
+        private static void DrawTileBoundaries(Tilemap tilemap, Vector3 tileCenter, float thickness)
+        {
+            if (tilemap == null) return;
+
+            // Draw tile boundaries
+            Vector3 topLeft = tileCenter + new Vector3(-tilemap.cellSize.x / 2, tilemap.cellSize.y / 2, 0);
+            Vector3 topRight = tileCenter + new Vector3(tilemap.cellSize.x / 2, tilemap.cellSize.y / 2, 0);
+            Vector3 bottomLeft = tileCenter + new Vector3(-tilemap.cellSize.x / 2, -tilemap.cellSize.y / 2, 0);
+            Vector3 bottomRight = tileCenter + new Vector3(tilemap.cellSize.x / 2, -tilemap.cellSize.y / 2, 0);
+
+            Handles.DrawLine(topLeft, topRight, thickness);
+            Handles.DrawLine(topRight, bottomRight, thickness);
+            Handles.DrawLine(bottomRight, bottomLeft, thickness);
+            Handles.DrawLine(bottomLeft, topLeft, thickness);
+        }
+
+        private static void DrawRenderTileConnections(Tilemap dataTilemap, Tilemap renderTilemap, Vector3Int renderTilePosition, Vector3 tileCenter)
+        {
+            if (dataTilemap == null || renderTilemap == null) return;
+
+            Vector3Int[] dataTilemapPositions = DualGridUtils.GetDataTilePositions(renderTilePosition);
+
+            foreach (Vector3Int dataTilePosition in dataTilemapPositions)
+            {
+                if (dataTilemap.HasTile(dataTilePosition))
+                {
+                    Vector3Int dataTileOffset = dataTilePosition - renderTilePosition;
+                    Vector3Int neightborOffset = DualGridUtils.ConvertDataTileOffsetToNeighborOffset(dataTileOffset);
+
+                    Vector3 corner = tileCenter + new Vector3(neightborOffset.x * renderTilemap.cellSize.x * 0.5f, neightborOffset.y * renderTilemap.cellSize.y * 0.5f, 0f);
+
+                    Handles.DrawLine(tileCenter, corner);
+                }
+            }
         }
 
     }
