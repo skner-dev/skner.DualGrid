@@ -129,7 +129,8 @@ namespace skner.DualGrid.Editor
         {
             if (tilemap == null) return;
 
-            // Draw tile boundaries
+            Handles.DrawSolidDisc(tileCenter, Vector3.forward, radius: 0.05f);
+
             Vector3 topLeft = tileCenter + new Vector3(-tilemap.cellSize.x / 2, tilemap.cellSize.y / 2, 0);
             Vector3 topRight = tileCenter + new Vector3(tilemap.cellSize.x / 2, tilemap.cellSize.y / 2, 0);
             Vector3 bottomLeft = tileCenter + new Vector3(-tilemap.cellSize.x / 2, -tilemap.cellSize.y / 2, 0);
@@ -152,12 +153,29 @@ namespace skner.DualGrid.Editor
                 if (dataTilemap.HasTile(dataTilePosition))
                 {
                     Vector3Int dataTileOffset = dataTilePosition - renderTilePosition;
-                    Vector3Int neightborOffset = DualGridUtils.ConvertDataTileOffsetToNeighborOffset(dataTileOffset);
+                    Vector3Int neighborOffset = DualGridUtils.ConvertDataTileOffsetToNeighborOffset(dataTileOffset);
 
-                    Vector3 corner = tileCenter + new Vector3(neightborOffset.x * renderTilemap.cellSize.x * 0.5f, neightborOffset.y * renderTilemap.cellSize.y * 0.5f, 0f);
+                    Vector3 corner = tileCenter + new Vector3(neighborOffset.x * renderTilemap.cellSize.x * 0.3f, neighborOffset.y * renderTilemap.cellSize.y * 0.3f, 0f);
 
-                    Handles.DrawLine(tileCenter, corner);
+                    DrawArrow(tileCenter, corner);
                 }
+            }
+
+            static void DrawArrow(Vector3 start, Vector3 end, float arrowHeadLength = 0.15f, float arrowHeadAngle = 30f)
+            {
+                // Draw the main line
+                Handles.DrawLine(start, end);
+
+                // Calculate direction of the line
+                Vector3 direction = (end - start).normalized;
+
+                // Calculate the points for the arrowhead
+                Vector3 right = Quaternion.Euler(0, 0, arrowHeadAngle) * -direction;
+                Vector3 left = Quaternion.Euler(0, 0, -arrowHeadAngle) * -direction;
+
+                // Draw the arrowhead lines
+                Handles.DrawLine(end, end + right * arrowHeadLength);
+                Handles.DrawLine(end, end + left * arrowHeadLength);
             }
         }
 
