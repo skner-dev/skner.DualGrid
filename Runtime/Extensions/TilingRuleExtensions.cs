@@ -20,7 +20,6 @@ namespace skner.DualGrid.Extensions
 
             var neightborIndex = rule.m_NeighborPositions.IndexOf(neighborOffsetPosition);
 
-            if (neightborIndex == -1) throw new System.ArgumentException($"Could not find a valid neighbor for tile id {rule.m_Id} with the data tile offset of {dataTileOffset}.");
             return neightborIndex;
         }
 

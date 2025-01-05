@@ -74,6 +74,8 @@ namespace skner.DualGrid
             Vector3Int dataTileOffset = dataTilePosition - renderTilePosition;
             
             int neighborIndex = rule.GetNeighborIndex(dataTileOffset);
+            if(neighborIndex == -1) return true; // If no neighbor is defined, it means it matches with anything.
+
             var neighborDataTile = _dataTilemap.GetTile(dataTilePosition);
             return RuleMatch(rule.m_Neighbors[neighborIndex], neighborDataTile);
         }
