@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using skner.DualGrid.Editor.Extensions;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
 
 namespace skner.DualGrid.Editor
@@ -18,21 +20,8 @@ namespace skner.DualGrid.Editor
 
             if (isSelectedObjectTexture2d)
             {
-                List<Sprite> sprites = GetSpritesFromTexture(selectedTexture);
-
-                newRuleTile.m_DefaultSprite = sprites.FirstOrDefault();
-                sprites.ForEach(sprite => AddTileRuleFromSprite(newRuleTile, sprite));
-
-                bool isTextureSlicedIn16Pieces = sprites.Count == 16;
-
-                if (isTextureSlicedIn16Pieces)
-                {
-                    bool shouldAutoSlice = EditorUtility.DisplayDialog("16x Sliced Texture Detected",
-                        "The selected texture is sliced in 16 pieces. Perform automatic rule tiling?", "Yes", "No");
-
-                    if(shouldAutoSlice) 
-                        AutoDualGridRuleTileProvider.ApplyConfigurationPreset(ref newRuleTile);
-                }
+                bool wasTextureApplied = newRuleTile.TryApplyTexture2D(selectedTexture);
+                if (!wasTextureApplied) return;
             }
 
             string activeAssetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
@@ -42,6 +31,8 @@ namespace skner.DualGrid.Editor
             AssetDatabase.CreateAsset(newRuleTile, AssetDatabase.GenerateUniqueAssetPath(assetPath));
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+
+            Selection.activeObject = newRuleTile;
         }
 
         private static bool TryGetSelectedTexture2D(out Texture2D selectedTexture2d)
@@ -56,17 +47,6 @@ namespace skner.DualGrid.Editor
                 selectedTexture2d = null;
                 return false;
             }
-        }
-
-        private static List<Sprite> GetSpritesFromTexture(Texture2D texture)
-        {
-            string path = AssetDatabase.GetAssetPath(texture);
-            return AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToList();
-        }
-
-        private static void AddTileRuleFromSprite(DualGridRuleTile tile, Sprite sprite)
-        {
-            tile.m_TilingRules.Add(new DualGridRuleTile.TilingRule() { m_Sprites = new Sprite[] { sprite } });
         }
 
     }

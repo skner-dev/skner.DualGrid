@@ -1,5 +1,6 @@
 using skner.DualGrid.Extensions;
 using skner.DualGrid.Utils;
+using System;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using static skner.DualGrid.DualGridRuleTile;
@@ -12,9 +13,14 @@ namespace skner.DualGrid
     /// <remarks>
     /// Avoid using this tile in a palette, as any other data tile can be used.
     /// </remarks>
+    [Serializable]
     [CreateAssetMenu(fileName = "DualGridRuleTile", menuName = "Scriptable Objects/DualGridRuleTile")]
     public class DualGridRuleTile : RuleTile<DualGridNeighbor>
     {
+
+        [SerializeField]
+        private Texture2D _originalTexture;
+        public Texture2D OriginalTexture { get { return _originalTexture; } internal set { _originalTexture = value; } }
 
         private DualGridTilemapModule _dualGridTilemapModule;
 

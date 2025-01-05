@@ -1,3 +1,4 @@
+using skner.DualGrid.Editor.Extensions;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,15 +8,111 @@ namespace skner.DualGrid.Editor
     public class DualGridRuleTileEditor : RuleTileEditor
     {
 
-        public override BoundsInt GetRuleGUIBounds(BoundsInt bounds, RuleTile.TilingRule rule)
+        private DualGridRuleTile _targetDualGridRuleTile;
+
+        public override void OnEnable()
         {
-            return new BoundsInt(-1, -1, 0, 2, 2, 0);
+            _targetDualGridRuleTile = (DualGridRuleTile)target;
+
+            base.OnEnable();
         }
 
-        public override Vector2 GetMatrixSize(BoundsInt bounds)
+        public override void OnInspectorGUI()
         {
-            float matrixCellSize = 27;
-            return new Vector2(bounds.size.x * matrixCellSize, bounds.size.y * matrixCellSize);
+            EditorGUILayout.LabelField("Dual Grid Settings", EditorStyles.boldLabel);
+
+            EditorGUI.BeginChangeCheck();
+
+            if (_targetDualGridRuleTile.OriginalTexture == null && _targetDualGridRuleTile.m_TilingRules.Count == 0)
+            {
+                DrawDragAndDropArea();
+            }
+
+            EditorGUI.BeginChangeCheck();
+            Texture2D appliedTexture = (Texture2D)EditorGUILayout.ObjectField("Original Texture", _targetDualGridRuleTile.OriginalTexture, typeof(Texture2D), false);
+            if (EditorGUI.EndChangeCheck())
+            {
+                _targetDualGridRuleTile.TryApplyTexture2D(appliedTexture);
+            }
+
+            if (_targetDualGridRuleTile.OriginalTexture == null) return;
+
+            if (appliedTexture.GetSplitSpritesFromTexture().Count != 16)
+            {
+                EditorGUILayout.HelpBox("Selected texture is not split in exactly 16 sprites.\nPlease provide a valid texture.", MessageType.Error);
+                return;
+            }
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("Apply Default GameObject to all Tile Rules"))
+            {
+                _targetDualGridRuleTile.m_TilingRules.ForEach(tilingRule => tilingRule.m_GameObject = _targetDualGridRuleTile.m_DefaultGameObject);
+            }
+
+            if (GUILayout.Button("Apply Default Collider to all Tile Rules"))
+            {
+                _targetDualGridRuleTile.m_TilingRules.ForEach(tilingRule => tilingRule.m_ColliderType = _targetDualGridRuleTile.m_DefaultColliderType);
+            }
+
+            if (GUILayout.Button("Refresh Rule Tiles in use"))
+            {
+                var dualGridModules = Object.FindObjectsByType<DualGridTilemapModule>(FindObjectsSortMode.None);
+                foreach (var dualGridModule in dualGridModules)
+                {
+                    if (dualGridModule.Tile == _targetDualGridRuleTile) dualGridModule.RefreshRenderTiles();
+                }
+            }
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("Apply Automatic Rule Tiling"))
+            {
+                _targetDualGridRuleTile.TryApplyTexture2D(_targetDualGridRuleTile.OriginalTexture, ignoreAutoSlicePrompt: true);
+                AutoDualGridRuleTileProvider.ApplyConfigurationPreset(ref _targetDualGridRuleTile);
+            }
+
+            GUILayout.Space(5);
+
+            EditorGUILayout.LabelField("Rule Tile Settings", EditorStyles.boldLabel);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(_targetDualGridRuleTile);
+            }
+
+            base.OnInspectorGUI();
+        }
+
+        private void DrawDragAndDropArea()
+        {
+            Rect dropArea = GUILayoutUtility.GetRect(0, 100, GUILayout.ExpandWidth(true));
+            GUI.Box(dropArea, "", EditorStyles.helpBox);
+            GUI.Box(dropArea, "Drag and drop a texture\nto start creating this Dual Grid Rule Tile", EditorStyles.centeredGreyMiniLabel);
+
+            Event evt = Event.current;
+            if (evt.type == EventType.DragUpdated || evt.type == EventType.DragPerform)
+            {
+                if (dropArea.Contains(evt.mousePosition))
+                {
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+
+                    if (evt.type == EventType.DragPerform)
+                    {
+                        DragAndDrop.AcceptDrag();
+
+                        foreach (Object draggedObject in DragAndDrop.objectReferences)
+                        {
+                            if (draggedObject is Texture2D texture)
+                            {
+                                _targetDualGridRuleTile.TryApplyTexture2D(texture);
+                                Repaint();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public override void RuleMatrixOnGUI(RuleTile tile, Rect rect, BoundsInt bounds, RuleTile.TilingRule tilingRule)
@@ -53,6 +150,17 @@ namespace skner.DualGrid.Editor
                     RuleMatrixIconOnGUI(tilingRule, neighbors, pos, r);
                 }
             }
+        }
+
+        public override BoundsInt GetRuleGUIBounds(BoundsInt bounds, RuleTile.TilingRule rule)
+        {
+            return new BoundsInt(-1, -1, 0, 2, 2, 0);
+        }
+
+        public override Vector2 GetMatrixSize(BoundsInt bounds)
+        {
+            float matrixCellSize = 27;
+            return new Vector2(bounds.size.x * matrixCellSize, bounds.size.y * matrixCellSize);
         }
 
     }
