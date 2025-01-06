@@ -20,19 +20,42 @@ namespace skner.DualGrid.Editor
         private bool _showRenderTileBoundaries = false;
         private bool _showRenderTileConnections = false;
 
+        public static Grid CreateNewDualGrid()
+        {
+            var newDualGrid = new GameObject("Dual Grid");
+            return newDualGrid.AddComponent<Grid>();
+        }
+
+        public static DualGridTilemapModule CreateNewDualGridTilemap(Grid grid = null)
+        {
+            if(grid == null) grid = CreateNewDualGrid();
+
+            var newDataTilemap = new GameObject("DataTilemap");
+            newDataTilemap.AddComponent<Tilemap>();
+            var dualGridTilemapModule = newDataTilemap.AddComponent<DualGridTilemapModule>();
+            newDataTilemap.transform.parent = grid.transform;
+
+            var dualGridTilemapModuleEditor = UnityEditor.Editor.CreateEditor(dualGridTilemapModule) as DualGridTilemapModuleEditor;
+            dualGridTilemapModuleEditor.InitializeRenderTilemap();
+
+            return dualGridTilemapModule;
+        }
+
         private void OnEnable()
         {
-            _targetComponent = (DualGridTilemapModule)target;
+            if(target != null)
+                _targetComponent = (DualGridTilemapModule)target;
 
             InitializeRenderTilemap();
         }
 
-        internal void InitializeRenderTilemap()
+        private void InitializeRenderTilemap()
         {
+            if (_targetComponent == null) return;
+
             if (_targetComponent.RenderTilemap == null)
             {
-                CreateRenderTilemapObject();
-                Debug.Log($"Created child RenderTilemap for DualGridTilemapModule {_targetComponent.name}.");
+                CreateRenderTilemapObject(_targetComponent);
             }
 
             _dataTilemap = _targetComponent.DataTilemap;
@@ -41,13 +64,13 @@ namespace skner.DualGrid.Editor
             DestroyTilemapRendererInDataTilemap();
         }
 
-        private GameObject CreateRenderTilemapObject()
+        internal static GameObject CreateRenderTilemapObject(DualGridTilemapModule targetModule)
         {
-            GameObject renderTilemapObject = new GameObject("RenderTilemap");
-            renderTilemapObject.transform.parent = _targetComponent.transform;
+            var renderTilemapObject = new GameObject("RenderTilemap");
+            renderTilemapObject.transform.parent = targetModule.transform;
             renderTilemapObject.transform.localPosition = new Vector3(-0.5f, -0.5f, 0f); // Offset by half a tile (TODO: Confirm if tiles can have different dynamic sizes, this might not work under those conditions)
 
-            Tilemap renderTilemap = renderTilemapObject.AddComponent<Tilemap>();
+            renderTilemapObject.AddComponent<Tilemap>();
             renderTilemapObject.AddComponent<TilemapRenderer>();
 
             return renderTilemapObject;
@@ -77,9 +100,6 @@ namespace skner.DualGrid.Editor
             if (EditorGUI.EndChangeCheck()) // Required so that it can update the tilemap if the rule tile assigned changes
                 _targetComponent.RefreshRenderTiles();
 
-            if (GUILayout.Button("Refresh Render Tilemap"))
-                _targetComponent.RefreshRenderTiles();
-
             GUILayout.Label("Visualization Handles", EditorStyles.boldLabel);
             _showDataTileBoundaries = EditorGUILayout.Toggle("Data Tile Boundaries", _showDataTileBoundaries);
             _showRenderTileBoundaries = EditorGUILayout.Toggle("Render Tile Boundaries", _showRenderTileBoundaries);
@@ -101,7 +121,7 @@ namespace skner.DualGrid.Editor
                 if (!_dataTilemap.HasTile(position)) continue;
 
                 Vector3 tileCenter = _dataTilemap.GetCellCenterWorld(position);
-                
+
                 Handles.color = Color.green;
                 DrawTileBoundaries(_dataTilemap, tileCenter, thickness: 3);
             }

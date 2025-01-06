@@ -11,29 +11,10 @@ namespace skner.DualGrid.Editor
         private static void CreateDualGridTilemapMenu()
         {
             Grid selectedGrid = Selection.activeGameObject?.GetComponent<Grid>();
-            bool isGridSelected = selectedGrid != null;
 
-            var newDualGrid = isGridSelected ? selectedGrid : CreateDualGrid();
-            CreateDualGridTilemapModule(newDualGrid);
+            var newDualGridTilemapModule = DualGridTilemapModuleEditor.CreateNewDualGridTilemap(selectedGrid);
 
-            Selection.activeGameObject = newDualGrid.gameObject;
-        }
-
-        private static Grid CreateDualGrid()
-        {
-            var newDualGrid = new GameObject("Dual Grid");
-            return newDualGrid.AddComponent<Grid>();
-        }
-
-        private static void CreateDualGridTilemapModule(Grid newDualGrid)
-        {
-            var newDataTilemap = new GameObject("DataTilemap");
-            newDataTilemap.AddComponent<Tilemap>();
-            var dualGridTilemapModule = newDataTilemap.AddComponent<DualGridTilemapModule>();
-            newDataTilemap.transform.parent = newDualGrid.transform;
-
-            var dualGridTilemapModuleEditor = UnityEditor.Editor.CreateEditor(dualGridTilemapModule) as DualGridTilemapModuleEditor;
-            dualGridTilemapModuleEditor.InitializeRenderTilemap();
+            Selection.activeGameObject = newDualGridTilemapModule.gameObject;
         }
 
     }

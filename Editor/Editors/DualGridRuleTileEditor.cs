@@ -10,9 +10,14 @@ namespace skner.DualGrid.Editor
 
         private DualGridRuleTile _targetDualGridRuleTile;
 
+        private const string PreviewActiveStatusKey = "PreviewActiveStatusKey";
+        private bool _isPreviewActive;
+
         public override void OnEnable()
         {
             _targetDualGridRuleTile = (DualGridRuleTile)target;
+
+            _isPreviewActive = EditorPrefs.GetBool(PreviewActiveStatusKey);
 
             base.OnEnable();
         }
@@ -55,16 +60,7 @@ namespace skner.DualGrid.Editor
                 _targetDualGridRuleTile.m_TilingRules.ForEach(tilingRule => tilingRule.m_ColliderType = _targetDualGridRuleTile.m_DefaultColliderType);
             }
 
-            if (GUILayout.Button("Refresh Rule Tiles in use"))
-            {
-                var dualGridModules = Object.FindObjectsByType<DualGridTilemapModule>(FindObjectsSortMode.None);
-                foreach (var dualGridModule in dualGridModules)
-                {
-                    if (dualGridModule.Tile == _targetDualGridRuleTile) dualGridModule.RefreshRenderTiles();
-                }
-            }
-
-            GUILayout.Space(10);
+            GUILayout.Space(5);
 
             if (GUILayout.Button("Apply Automatic Rule Tiling"))
             {
@@ -74,14 +70,16 @@ namespace skner.DualGrid.Editor
 
             GUILayout.Space(5);
 
+            DrawRuleTilePreview();
+
             EditorGUILayout.LabelField("Rule Tile Settings", EditorStyles.boldLabel);
+
+            base.OnInspectorGUI();
 
             if (EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(_targetDualGridRuleTile);
             }
-
-            base.OnInspectorGUI();
         }
 
         private void DrawDragAndDropArea()
@@ -111,6 +109,51 @@ namespace skner.DualGrid.Editor
                             }
                         }
                     }
+                }
+            }
+        }
+
+        private void DrawRuleTilePreview()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Tilemap Preview", EditorStyles.boldLabel);
+
+            if (!_isPreviewActive)
+            {
+                if (GUILayout.Button("Show Preview"))
+                {
+                    _isPreviewActive = true;
+                    EditorPrefs.SetBool(PreviewActiveStatusKey, _isPreviewActive);
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("Hide Preview"))
+                {
+                    _isPreviewActive = false;
+                    EditorPrefs.SetBool(PreviewActiveStatusKey, _isPreviewActive);
+                }
+            }
+
+            if (_isPreviewActive)
+            {
+                DualGridRuleTilePreviewer.LoadPreviewScene(_targetDualGridRuleTile);
+
+                DualGridRuleTilePreviewer.UpdateRenderTexture(); // TODO: Slower than ideal, but can't find any better option to check for changes...
+                RenderTexture previewTexture = DualGridRuleTilePreviewer.GetRenderTexture();
+
+                if (previewTexture != null)
+                {
+                    float aspectRatio = (float)previewTexture.width / previewTexture.height;
+
+                    float desiredWidth = EditorGUIUtility.currentViewWidth;
+                    float desiredHeight = desiredWidth / aspectRatio;
+
+                    GUILayout.Box(new GUIContent(previewTexture), GUILayout.Width(desiredWidth - 22), GUILayout.Height(desiredHeight - 3));
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("Preview not available.", EditorStyles.centeredGreyMiniLabel);
                 }
             }
         }

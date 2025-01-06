@@ -19,6 +19,7 @@ namespace skner.DualGrid
     {
 
         [SerializeField]
+        [HideInInspector]
         private Texture2D _originalTexture;
         public Texture2D OriginalTexture { get { return _originalTexture; } internal set { _originalTexture = value; } }
 
@@ -41,12 +42,17 @@ namespace skner.DualGrid
             public const int NotFilled = 2;
         }
 
-        /// <inheritdoc/>
-        public override bool StartUp(Vector3Int position, ITilemap tilemap, GameObject instantiatedGameObject)
+        /// <summary>
+        /// Force sets the actual Data Tilemap before updating the tile, because Unity seems to move tiles between tilemaps sometimes.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="tilemap"></param>
+        /// <param name="tileData"></param>
+        public override void GetTileData(Vector3Int position, ITilemap tilemap, ref TileData tileData)
         {
             SetDataTilemap(tilemap);
 
-            return base.StartUp(position, tilemap, instantiatedGameObject);
+            base.GetTileData(position, tilemap, ref tileData);
         }
 
         /// <inheritdoc/>
@@ -109,7 +115,7 @@ namespace skner.DualGrid
         /// <returns></returns>
         private Tilemap GetDataTilemap(ITilemap tilemap)
         {
-            if (_dataTilemap == null)
+            if (_dualGridTilemapModule == null || _dualGridTilemapModule.DataTilemap == null)
             {
                 SetDataTilemap(tilemap);
             }
