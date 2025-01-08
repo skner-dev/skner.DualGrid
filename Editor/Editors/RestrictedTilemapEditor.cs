@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using skner.DualGrid.Extensions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using skner.DualGrid.Extensions;
 
 namespace skner.DualGrid.Editor
 {
@@ -16,8 +15,11 @@ namespace skner.DualGrid.Editor
         {
             Tilemap tilemap = (Tilemap)target;
 
-            tilemap.animationFrameRate = EditorGUILayout.FloatField("Animation Frame Rate", tilemap.animationFrameRate);
-            tilemap.color = EditorGUILayout.ColorField("Color", tilemap.color);
+            SerializedProperty animationFrameRate = serializedObject.FindProperty("m_AnimationFrameRate");
+            SerializedProperty color = serializedObject.FindProperty("m_Color");
+            
+            EditorGUILayout.PropertyField(animationFrameRate, new GUIContent("Animation Frame Rate"));
+            EditorGUILayout.PropertyField(color, new GUIContent("Color"));
 
             // Check if the Tilemap is part of a DualGridTilemapModule
             bool isRenderTilemap = tilemap.GetComponentInImmediateParent<DualGridTilemapModule>() != null;
@@ -46,27 +48,14 @@ namespace skner.DualGrid.Editor
                     DisplayTilemapInfo(tilemap);
                 }
             }
+
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void DisplayTilemapInfo(Tilemap tilemap)
         {
-            var uniqueTiles = new HashSet<TileBase>();
-            var uniqueSprites = new HashSet<Sprite>();
-
-            foreach (var position in tilemap.cellBounds.allPositionsWithin)
-            {
-                TileBase tile = tilemap.GetTile(position);
-                if (tile != null)
-                {
-                    uniqueTiles.Add(tile);
-                }
-
-                Sprite sprite = tilemap.GetSprite(position);
-                if (sprite != null)
-                {
-                    uniqueSprites.Add(sprite);
-                }
-            }
+            TileBase[] uniqueTiles = GetUniqueTilesFromTilemap(tilemap);
+            Sprite[] uniqueSprites = GetUniqueSpritesFromTilemap(tilemap);
 
             // Display unique tiles
             EditorGUILayout.LabelField("Tiles", EditorStyles.boldLabel);
@@ -79,8 +68,34 @@ namespace skner.DualGrid.Editor
             EditorGUILayout.LabelField("Sprites", EditorStyles.boldLabel);
             foreach (var sprite in uniqueSprites)
             {
-                EditorGUILayout.ObjectField(sprite, typeof(TileBase), false);
+                EditorGUILayout.ObjectField(sprite, typeof(Sprite), false);
             }
+        }
+
+        private TileBase[] _usedTilesCache;
+        private TileBase[] GetUniqueTilesFromTilemap(Tilemap tilemap)
+        {
+            int usedTilesCount = tilemap.GetUsedTilesCount();
+            if (_usedTilesCache == null || _usedTilesCache.Length != usedTilesCount)
+            {
+                _usedTilesCache = new TileBase[usedTilesCount];
+            }
+            tilemap.GetUsedTilesNonAlloc(_usedTilesCache);
+
+            return _usedTilesCache;
+        }
+
+        private Sprite[] _usedSpritesCache;
+        private Sprite[] GetUniqueSpritesFromTilemap(Tilemap tilemap)
+        {
+            int usedSpritesCount = tilemap.GetUsedSpritesCount();
+            if (_usedSpritesCache == null || _usedSpritesCache.Length != usedSpritesCount)
+            {
+                _usedSpritesCache = new Sprite[usedSpritesCount];
+            }
+            tilemap.GetUsedSpritesNonAlloc(_usedSpritesCache);
+
+            return _usedSpritesCache;
         }
 
     }
