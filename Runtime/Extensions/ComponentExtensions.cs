@@ -28,7 +28,7 @@ namespace skner.DualGrid.Extensions
         }
 
         /// <summary>
-        /// Returns the first component found in immediate children of <paramref name="component"/>.
+        /// Returns the first component found in immediate parent of <paramref name="component"/>.
         /// </summary>
         /// <remarks>
         /// It will not return a component found in the <paramref name="component"/>'s game object.

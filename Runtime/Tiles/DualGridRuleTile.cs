@@ -65,7 +65,7 @@ namespace skner.DualGrid
 
             foreach (Vector3Int dataTilePosition in dataTilemapPositions)
             {
-                if(!DoesRuleMatchWithDataTile(ruleToValidate, dataTilePosition, renderTilePosition))
+                if (!DoesRuleMatchWithDataTile(ruleToValidate, dataTilePosition, renderTilePosition))
                 {
                     return false;
                 }
@@ -84,21 +84,24 @@ namespace skner.DualGrid
         private bool DoesRuleMatchWithDataTile(TilingRule rule, Vector3Int dataTilePosition, Vector3Int renderTilePosition)
         {
             Vector3Int dataTileOffset = dataTilePosition - renderTilePosition;
-            
-            int neighborIndex = rule.GetNeighborIndex(dataTileOffset);
-            if(neighborIndex == -1) return true; // If no neighbor is defined, it means it matches with anything.
 
-            var neighborDataTile = _dataTilemap.GetTile(dataTilePosition);
+            int neighborIndex = rule.GetNeighborIndex(dataTileOffset);
+            if (neighborIndex == -1) return true; // If no neighbor is defined, it means it matches with anything.
+
+            var neighborDataTile = _dataTilemap.GetEditorPreviewTile(dataTilePosition);
+            if (neighborDataTile == null) neighborDataTile = _dataTilemap.GetTile(dataTilePosition);
             return RuleMatch(rule.m_Neighbors[neighborIndex], neighborDataTile);
         }
 
         /// <inheritdoc/>
         public override bool RuleMatch(int neighbor, TileBase other)
         {
+            bool isEmptyPreviewTile = other is DualGridPreviewTile dualGridPreviewTile && dualGridPreviewTile.IsFilled == false;
+
             return neighbor switch
             {
-                DualGridNeighbor.Filled => other != null,
-                DualGridNeighbor.NotFilled => other == null,
+                DualGridNeighbor.Filled => !isEmptyPreviewTile && other != null,
+                DualGridNeighbor.NotFilled => isEmptyPreviewTile || other == null,
                 _ => true,
             };
         }

@@ -203,7 +203,7 @@ namespace skner.DualGrid.Editor
         private static void UpdateDualGridTile(DualGridTilemapModule dualGridTilemapModule, DualGridRuleTile dualGridRuleTile)
         {
             dualGridTilemapModule.Tile = dualGridRuleTile;
-            dualGridTilemapModule.RefreshRenderTiles();
+            dualGridTilemapModule.RefreshRenderTilemap();
         }
 
     }

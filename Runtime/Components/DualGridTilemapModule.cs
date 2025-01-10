@@ -1,6 +1,5 @@
 ﻿using skner.DualGrid.Extensions;
 using skner.DualGrid.Utils;
-using System;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -72,13 +71,10 @@ namespace skner.DualGrid
                     Debug.LogError($"Cannot update render tilemap, because tile is not set in dual grid module.", RenderTilemap);
                     return;
                 }
-#if UNITY_EDITOR
-                UnityEditor.Undo.RecordObject(RenderTilemap, $"Updated {tileChanges.Length} render tile(s)");
-#endif
 
                 foreach (Tilemap.SyncTile tileChange in tileChanges)
                 {
-                    UpdateRenderTilemapFromDataTile(tileChange.position);
+                    RefreshRenderTiles(tileChange.position);
                 }
             }
         }
@@ -86,31 +82,28 @@ namespace skner.DualGrid
         /// <summary>
         /// Fully refreshes the <see cref="RenderTilemap"/> by forcing an update from all tiles in the <see cref="DataTilemap"/>.
         /// </summary>
-        internal void RefreshRenderTiles()
+        public virtual void RefreshRenderTilemap()
         {
             if (Tile == null)
             {
                 Debug.LogError($"Cannot refresh render tilemap, because tile is not set in dual grid module.", RenderTilemap);
                 return;
             }
-#if UNITY_EDITOR
-            UnityEditor.Undo.RecordObject(RenderTilemap, "Refreshed render tiles");
-#endif
 
             RenderTilemap.ClearAllTiles();
             foreach (var position in DataTilemap.cellBounds.allPositionsWithin)
             {
-                if (DataTilemap.HasTile(position)) UpdateRenderTilemapFromDataTile(position);
+                if (DataTilemap.HasTile(position)) RefreshRenderTiles(position);
             }
         }
 
-        private void UpdateRenderTilemapFromDataTile(Vector3Int dataTilePosition)
+        public virtual void RefreshRenderTiles(Vector3Int dataTilePosition)
         {
-            bool isTileBeingAdded = DataTilemap.HasTile(dataTilePosition);
+            bool hasDataTile = DataTilemap.HasTile(dataTilePosition);
 
             foreach (Vector3Int renderTilePosition in DualGridUtils.GetRenderTilePositions(dataTilePosition))
             {
-                if (isTileBeingAdded)
+                if (hasDataTile)
                 {
                     SetRenderTile(renderTilePosition);
                 }

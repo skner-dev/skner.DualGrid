@@ -98,7 +98,7 @@ namespace skner.DualGrid.Editor
             GUILayout.Label("Tools", EditorStyles.boldLabel);
 
             if (EditorGUI.EndChangeCheck()) // Required so that it can update the tilemap if the rule tile assigned changes
-                _targetComponent.RefreshRenderTiles();
+                _targetComponent.RefreshRenderTilemap();
 
             GUILayout.Label("Visualization Handles", EditorStyles.boldLabel);
             _showDataTileBoundaries = EditorGUILayout.Toggle("Data Tile Boundaries", _showDataTileBoundaries);
