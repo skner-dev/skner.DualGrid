@@ -21,7 +21,13 @@ namespace skner.DualGrid
         [SerializeField]
         [HideInInspector]
         private Texture2D _originalTexture;
-        public Texture2D OriginalTexture { get { return _originalTexture; } internal set { _originalTexture = value; } }
+        public Texture2D OriginalTexture { get => _originalTexture; internal set => _originalTexture = value; }
+
+        private Tile _dataTile;
+        /// <summary>
+        /// The Data Tile is a tile generated from this Dual Grid Rule Tile to populate the DataTilemap.
+        /// </summary>
+        public Tile DataTile { get => _dataTile != null ? _dataTile : RefreshDataTile(); }
 
         private DualGridTilemapModule _dualGridTilemapModule;
 
@@ -53,6 +59,21 @@ namespace skner.DualGrid
             SetDataTilemap(tilemap);
 
             base.GetTileData(position, tilemap, ref tileData);
+        }
+
+        /// <summary>
+        /// Refreshes the <see cref="DataTile"/> with this <see cref="DualGridRuleTile"/>'s configuration.
+        /// </summary>
+        /// <returns>The refreshed data tile.</returns>
+        public virtual Tile RefreshDataTile()
+        {
+            if (_dataTile == null) _dataTile = ScriptableObject.CreateInstance<Tile>();
+
+            _dataTile.name = this.name;
+            _dataTile.colliderType = this.m_DefaultColliderType;
+            _dataTile.gameObject = this.m_DefaultGameObject;
+
+            return _dataTile;
         }
 
         /// <inheritdoc/>
@@ -147,5 +168,6 @@ namespace skner.DualGrid
                 //    $"If the tilemap is a tile palette, discard this warning, otherwise investigate it, as this tile won't work properly.", originTilemap);
             }
         }
+
     }
 }

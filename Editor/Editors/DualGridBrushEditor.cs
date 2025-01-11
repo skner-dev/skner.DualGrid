@@ -97,6 +97,7 @@ namespace skner.DualGrid.Editor
             _lastTool = GridBrushBase.Tool.Paint;
         }
 
+#if UNITY_2023_1_OR_NEWER
         public override void ErasePreview(GridLayout gridLayout, GameObject brushTarget, Vector3Int position)
         {
             if (brushTarget.TryGetComponent(out DualGridTilemapModule dualGridTilemapModule))
@@ -120,6 +121,7 @@ namespace skner.DualGrid.Editor
             _lastBounds = bounds;
             _lastTool = GridBrushBase.Tool.Erase;
         }
+#endif
 
         public override void BoxFillPreview(GridLayout gridLayout, GameObject brushTarget, BoundsInt bounds)
         {

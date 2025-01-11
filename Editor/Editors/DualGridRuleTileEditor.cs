@@ -78,6 +78,7 @@ namespace skner.DualGrid.Editor
 
             if (EditorGUI.EndChangeCheck())
             {
+                _targetDualGridRuleTile.RefreshDataTile();
                 EditorUtility.SetDirty(_targetDualGridRuleTile);
             }
         }

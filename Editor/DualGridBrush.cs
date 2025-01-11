@@ -1,5 +1,7 @@
-﻿using UnityEditor.Tilemaps;
+﻿using System.Collections.Generic;
+using UnityEditor.Tilemaps;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace skner.DualGrid.Editor
 {
@@ -15,26 +17,47 @@ namespace skner.DualGrid.Editor
 
         public override void BoxFill(GridLayout gridLayout, GameObject brushTarget, BoundsInt bounds)
         {
-            base.BoxFill(gridLayout, brushTarget, bounds);
-
-            RefreshDualGridTilemap(brushTarget, bounds);
+            if (brushTarget.TryGetComponent(out DualGridTilemapModule dualGridTilemapModule))
+            {
+                SetDualGridTiles(dualGridTilemapModule, dualGridTilemapModule.Tile.DataTile, bounds);
+            }
+            else
+            {
+                base.BoxFill(gridLayout, brushTarget, bounds);
+            }
         }
 
         public override void BoxErase(GridLayout gridLayout, GameObject brushTarget, BoundsInt bounds)
         {
-            base.BoxErase(gridLayout, brushTarget, bounds);
-
-            RefreshDualGridTilemap(brushTarget, bounds);
-        }
-
-        protected virtual void RefreshDualGridTilemap(GameObject brushTarget, BoundsInt bounds)
-        {
             if (brushTarget.TryGetComponent(out DualGridTilemapModule dualGridTilemapModule))
             {
-                foreach (var position in bounds.allPositionsWithin)
-                {
-                    dualGridTilemapModule.RefreshRenderTiles(position);
-                }
+                SetDualGridTiles(dualGridTilemapModule, null, bounds);
+            }
+            else
+            {
+                base.BoxErase(gridLayout, brushTarget, bounds);
+            }
+        }
+
+        private void SetDualGridTiles(DualGridTilemapModule dualGridTilemapModule, TileBase tile, BoundsInt bounds)
+        {
+            var tileChangeData = new List<TileChangeData>();
+
+            foreach (var position in bounds.allPositionsWithin)
+            {
+                tileChangeData.Add(new TileChangeData { position = position, tile = tile });
+            }
+
+            dualGridTilemapModule.DataTilemap.SetTiles(tileChangeData.ToArray(), ignoreLockFlags: false);
+            RefreshDualGridTilemap(dualGridTilemapModule, bounds);
+        }
+
+        protected virtual void RefreshDualGridTilemap(DualGridTilemapModule dualGridTilemapModule, BoundsInt bounds)
+        {
+            foreach (var position in bounds.allPositionsWithin)
+            {
+                dualGridTilemapModule.RefreshRenderTiles(position);
+                dualGridTilemapModule.DataTilemap.RefreshTile(position);
             }
         }
 
