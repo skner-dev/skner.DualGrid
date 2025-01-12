@@ -21,6 +21,9 @@ namespace skner.DualGrid
         [Tooltip("The DualGridRuleTile that will be applied in the Render Tilemap")]
         public DualGridRuleTile Tile;
 
+        [Tooltip("If a TilemapCollider2D should be active based on the Dual Grid Rule Tile's default collider type")]
+        public bool EnableTilemapCollider;
+
         private Tilemap _dataTilemap;
         public Tilemap DataTilemap
         {

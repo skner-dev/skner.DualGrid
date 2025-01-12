@@ -1,5 +1,6 @@
 ﻿using skner.DualGrid.Utils;
 using System;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -28,7 +29,7 @@ namespace skner.DualGrid.Editor
 
         public static DualGridTilemapModule CreateNewDualGridTilemap(Grid grid = null)
         {
-            if(grid == null) grid = CreateNewDualGrid();
+            if (grid == null) grid = CreateNewDualGrid();
 
             var newDataTilemap = new GameObject("DataTilemap");
             newDataTilemap.AddComponent<Tilemap>();
@@ -43,7 +44,7 @@ namespace skner.DualGrid.Editor
 
         private void OnEnable()
         {
-            if(target != null)
+            if (target != null)
                 _targetComponent = (DualGridTilemapModule)target;
 
             InitializeRenderTilemap();
@@ -62,6 +63,7 @@ namespace skner.DualGrid.Editor
             _renderTilemap = _targetComponent.RenderTilemap;
 
             DestroyTilemapRendererInDataTilemap();
+            UpdateTilemapColliderComponents();
         }
 
         internal static GameObject CreateRenderTilemapObject(DualGridTilemapModule targetModule)
@@ -79,10 +81,53 @@ namespace skner.DualGrid.Editor
         private void DestroyTilemapRendererInDataTilemap()
         {
             TilemapRenderer renderer = _targetComponent.GetComponent<TilemapRenderer>();
-            if (renderer != null)
+            DestroyComponentIfExists(renderer, "Dual Grid Tilemaps cannot have TilemapRenderers in the same GameObject. TilemapRenderer has been destroyed.");
+        }
+
+        private void UpdateTilemapColliderComponents(bool shouldLogWarnings = true)
+        {
+            TilemapCollider2D tilemapColliderFromDataTilemap = _targetComponent.DataTilemap.GetComponent<TilemapCollider2D>();
+            TilemapCollider2D tilemapColliderFromRenderTilemap = _targetComponent.RenderTilemap.GetComponent<TilemapCollider2D>();
+
+            string warningMessage;
+            if (_targetComponent.EnableTilemapCollider == false)
             {
-                Debug.Log("Dual Grid Tilemaps cannot have TilemapRenderers in the same GameObject. TilemapRenderer has been destroyed.");
-                DestroyImmediate(renderer);
+                warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D if not enabled in Dual Grid Tilemap Module.";
+                DestroyComponentIfExists(tilemapColliderFromDataTilemap, shouldLogWarnings ? warningMessage : null);
+                DestroyComponentIfExists(tilemapColliderFromRenderTilemap, shouldLogWarnings ? warningMessage : null);
+                return;
+            }
+
+            switch (_targetComponent.Tile.DataTile.colliderType)
+            {
+                case Tile.ColliderType.None:
+                    warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D if Dual Grid Tile has collider type set to none.";
+                    DestroyComponentIfExists(tilemapColliderFromDataTilemap, shouldLogWarnings ? warningMessage : null);
+                    DestroyComponentIfExists(tilemapColliderFromRenderTilemap, shouldLogWarnings ? warningMessage : null);
+                    break;
+                case Tile.ColliderType.Sprite:
+                    warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D in the Data Tilemap if Dual Grid Tile has collider type set to Sprite.";
+                    DestroyComponentIfExists(tilemapColliderFromDataTilemap, shouldLogWarnings ? warningMessage : null);
+                    if (tilemapColliderFromRenderTilemap == null) _targetComponent.RenderTilemap.gameObject.AddComponent<TilemapCollider2D>();
+                    break;
+                case Tile.ColliderType.Grid:
+                    warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D in the Render Tilemap if Dual Grid Tile has collider type set to Grid.";
+                    if (tilemapColliderFromDataTilemap == null) _targetComponent.DataTilemap.gameObject.AddComponent<TilemapCollider2D>();
+                    DestroyComponentIfExists(tilemapColliderFromRenderTilemap, shouldLogWarnings ? warningMessage : null);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void DestroyComponentIfExists(Component component, string warningMessage = null)
+        {
+            if (component != null)
+            {
+                if(warningMessage != null)
+                    Debug.LogWarning(warningMessage);
+                
+                DestroyImmediate(component);
             }
         }
 
@@ -97,8 +142,11 @@ namespace skner.DualGrid.Editor
             GUILayout.Space(5);
             GUILayout.Label("Tools", EditorStyles.boldLabel);
 
-            if (EditorGUI.EndChangeCheck()) // Required so that it can update the tilemap if the rule tile assigned changes
-                _targetComponent.RefreshRenderTilemap();
+            if (EditorGUI.EndChangeCheck())
+            {
+                _targetComponent.RefreshRenderTilemap(); // Required so that it can update the tilemap if the rule tile assigned changes
+                UpdateTilemapColliderComponents(shouldLogWarnings: false);
+            }
 
             GUILayout.Label("Visualization Handles", EditorStyles.boldLabel);
             _showDataTileBoundaries = EditorGUILayout.Toggle("Data Tile Boundaries", _showDataTileBoundaries);
