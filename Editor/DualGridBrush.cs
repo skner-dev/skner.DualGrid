@@ -19,7 +19,7 @@ namespace skner.DualGrid.Editor
         {
             if (brushTarget.TryGetComponent(out DualGridTilemapModule dualGridTilemapModule))
             {
-                SetDualGridTiles(dualGridTilemapModule, dualGridTilemapModule.Tile.DataTile, bounds);
+                SetDualGridTiles(dualGridTilemapModule, dualGridTilemapModule.DataTile, bounds);
             }
             else
             {
@@ -39,13 +39,13 @@ namespace skner.DualGrid.Editor
             }
         }
 
-        private void SetDualGridTiles(DualGridTilemapModule dualGridTilemapModule, TileBase tile, BoundsInt bounds)
+        private void SetDualGridTiles(DualGridTilemapModule dualGridTilemapModule, DualGridDataTile dualGridDataTile, BoundsInt bounds)
         {
             var tileChangeData = new List<TileChangeData>();
 
             foreach (var position in bounds.allPositionsWithin)
             {
-                tileChangeData.Add(new TileChangeData { position = position, tile = tile });
+                tileChangeData.Add(new TileChangeData { position = position, tile = dualGridDataTile });
             }
 
             dualGridTilemapModule.DataTilemap.SetTiles(tileChangeData.ToArray(), ignoreLockFlags: false);

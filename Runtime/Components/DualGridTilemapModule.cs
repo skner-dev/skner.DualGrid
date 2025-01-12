@@ -5,6 +5,8 @@ using UnityEngine.Tilemaps;
 
 namespace skner.DualGrid
 {
+    public enum GameObjectOrigin { None, DataTilemap, RenderTilemap }
+
     [RequireComponent(typeof(Tilemap))]
     [DisallowMultipleComponent]
     /// <summary>
@@ -17,12 +19,19 @@ namespace skner.DualGrid
     /// </remarks>
     public class DualGridTilemapModule : MonoBehaviour
     {
+        [SerializeField]
+        private DualGridRuleTile _renderTile;
+        public DualGridRuleTile RenderTile { get => _renderTile; internal set => _renderTile = value; }
 
-        [Tooltip("The DualGridRuleTile that will be applied in the Render Tilemap")]
-        public DualGridRuleTile Tile;
+        public DualGridDataTile DataTile => RenderTile.DataTile;
 
-        [Tooltip("If a TilemapCollider2D should be active based on the Dual Grid Rule Tile's default collider type")]
-        public bool EnableTilemapCollider;
+        [SerializeField]
+        private bool _enableTilemapCollider = false;
+        public bool EnableTilemapCollider { get => _enableTilemapCollider; internal set => _enableTilemapCollider = value; }
+
+        [SerializeField]
+        private GameObjectOrigin _gameObjectOrigin = GameObjectOrigin.None;
+        public GameObjectOrigin GameObjectOrigin { get => _gameObjectOrigin; internal set => _gameObjectOrigin = value; }
 
         private Tilemap _dataTilemap;
         public Tilemap DataTilemap
@@ -69,7 +78,7 @@ namespace skner.DualGrid
         {
             if (tilemap == DataTilemap)
             {
-                if (Tile == null)
+                if (RenderTile == null)
                 {
                     Debug.LogError($"Cannot update render tilemap, because tile is not set in dual grid module.", RenderTilemap);
                     return;
@@ -87,7 +96,7 @@ namespace skner.DualGrid
         /// </summary>
         public virtual void RefreshRenderTilemap()
         {
-            if (Tile == null)
+            if (RenderTile == null)
             {
                 Debug.LogError($"Cannot refresh render tilemap, because tile is not set in dual grid module.", RenderTilemap);
                 return;
@@ -117,11 +126,26 @@ namespace skner.DualGrid
             }
         }
 
+        /// <summary>
+        /// Refreshes the <see cref="DataTile"/> with this <see cref="RenderTile"/>'s configuration.
+        /// </summary>
+        /// <returns>The refreshed data tile.</returns>
+        public virtual DualGridDataTile GenerateDataTile()
+        {
+            var dataTile = ScriptableObject.CreateInstance<DualGridDataTile>();
+
+            dataTile.name = RenderTile.name;
+            dataTile.colliderType = RenderTile.m_DefaultColliderType;
+            dataTile.gameObject = RenderTile.m_DefaultGameObject;
+
+            return dataTile;
+        }
+
         private void SetRenderTile(Vector3Int renderTilePosition)
         {
             if (!RenderTilemap.HasTile(renderTilePosition))
             {
-                RenderTilemap.SetTile(renderTilePosition, Tile);
+                RenderTilemap.SetTile(renderTilePosition, RenderTile);
             }
             else
             {

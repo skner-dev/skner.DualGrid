@@ -44,7 +44,7 @@ namespace skner.DualGrid.Editor
                 EditorSceneManager.MoveGameObjectToScene(_previewDualGridTilemapModule.transform.parent.gameObject, _previewScene);
             }
 
-            if (_previewDualGridTilemapModule.Tile != tile)
+            if (_previewDualGridTilemapModule.RenderTile != tile)
             {
                 UpdateDualGridTile(_previewDualGridTilemapModule, tile);
             }
@@ -202,7 +202,7 @@ namespace skner.DualGrid.Editor
 
         private static void UpdateDualGridTile(DualGridTilemapModule dualGridTilemapModule, DualGridRuleTile dualGridRuleTile)
         {
-            dualGridTilemapModule.Tile = dualGridRuleTile;
+            dualGridTilemapModule.RenderTile = dualGridRuleTile;
             dualGridTilemapModule.RefreshRenderTilemap();
         }
 

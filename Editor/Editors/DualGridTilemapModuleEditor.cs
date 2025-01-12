@@ -11,6 +11,13 @@ namespace skner.DualGrid.Editor
     public class DualGridTilemapModuleEditor : UnityEditor.Editor
     {
 
+        private static class Styles
+        {
+            public static readonly GUIContent RenderTile = EditorGUIUtility.TrTextContent("RenderTile", "The Render Tile that will be applied in the Render Tilemap.");
+            public static readonly GUIContent EnableTilemapCollider = EditorGUIUtility.TrTextContent("Enable Tilemap Collider", "If a TilemapCollider2D should be active based on the Dual Grid Rule Tile's default collider type.");
+            public static readonly GUIContent GameObjectOrigin = EditorGUIUtility.TrTextContent("Game Object Origin", "Determines which tilemap the GameObjects defined in the Dual Grid Rule Tile should be in.");
+        }
+
         private DualGridTilemapModule _targetComponent;
 
         private Tilemap _dataTilemap;
@@ -98,7 +105,7 @@ namespace skner.DualGrid.Editor
                 return;
             }
 
-            switch (_targetComponent.Tile.DataTile.colliderType)
+            switch (_targetComponent.DataTile.colliderType)
             {
                 case Tile.ColliderType.None:
                     warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D if Dual Grid Tile has collider type set to none.";
@@ -124,9 +131,9 @@ namespace skner.DualGrid.Editor
         {
             if (component != null)
             {
-                if(warningMessage != null)
+                if (warningMessage != null)
                     Debug.LogWarning(warningMessage);
-                
+
                 DestroyImmediate(component);
             }
         }
@@ -137,15 +144,35 @@ namespace skner.DualGrid.Editor
 
             EditorGUI.BeginChangeCheck();
 
-            DrawDefaultInspector();
+            EditorGUI.BeginChangeCheck();
+            _targetComponent.RenderTile = EditorGUILayout.ObjectField(Styles.RenderTile, _targetComponent.RenderTile, typeof(DualGridRuleTile), false) as DualGridRuleTile;
+            if (EditorGUI.EndChangeCheck())
+            {
+                _targetComponent.DataTilemap.RefreshAllTiles();
+                _targetComponent.RefreshRenderTilemap();
+            }
+
+            EditorGUI.BeginChangeCheck();
+            _targetComponent.EnableTilemapCollider = EditorGUILayout.Toggle(Styles.EnableTilemapCollider, _targetComponent.EnableTilemapCollider);
+            if (EditorGUI.EndChangeCheck())
+            {
+                UpdateTilemapColliderComponents(shouldLogWarnings: false);
+            }
+
+            EditorGUI.BeginChangeCheck();
+            _targetComponent.GameObjectOrigin = (GameObjectOrigin)EditorGUILayout.EnumPopup(Styles.GameObjectOrigin, _targetComponent.GameObjectOrigin);
+            if (EditorGUI.EndChangeCheck())
+            {
+                _targetComponent.DataTilemap.RefreshAllTiles();
+                _targetComponent.RefreshRenderTilemap();
+            }
 
             GUILayout.Space(5);
             GUILayout.Label("Tools", EditorStyles.boldLabel);
 
             if (EditorGUI.EndChangeCheck())
             {
-                _targetComponent.RefreshRenderTilemap(); // Required so that it can update the tilemap if the rule tile assigned changes
-                UpdateTilemapColliderComponents(shouldLogWarnings: false);
+                EditorUtility.SetDirty(_targetComponent);
             }
 
             GUILayout.Label("Visualization Handles", EditorStyles.boldLabel);

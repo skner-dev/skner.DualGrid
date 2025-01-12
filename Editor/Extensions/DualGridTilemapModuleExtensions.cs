@@ -40,7 +40,7 @@ namespace skner.DualGrid.Editor.Extensions
 
         private static void SetPreviewRenderTile(DualGridTilemapModule dualGridTilemapModule, Vector3Int previewRenderTilePosition)
         {
-            dualGridTilemapModule.RenderTilemap.SetEditorPreviewTile(previewRenderTilePosition, dualGridTilemapModule.Tile);
+            dualGridTilemapModule.RenderTilemap.SetEditorPreviewTile(previewRenderTilePosition, dualGridTilemapModule.RenderTile);
             dualGridTilemapModule.RenderTilemap.RefreshTile(previewRenderTilePosition);
         }
 

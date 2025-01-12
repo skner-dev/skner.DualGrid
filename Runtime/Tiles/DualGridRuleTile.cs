@@ -12,6 +12,8 @@ namespace skner.DualGrid
     /// </summary>
     /// <remarks>
     /// Avoid using this tile in a palette, as any other data tile can be used.
+    /// <para></para>
+    /// This tile type will be used in all Render Tilemaps.
     /// </remarks>
     [Serializable]
     [CreateAssetMenu(fileName = "DualGridRuleTile", menuName = "Scriptable Objects/DualGridRuleTile")]
@@ -23,11 +25,11 @@ namespace skner.DualGrid
         private Texture2D _originalTexture;
         public Texture2D OriginalTexture { get => _originalTexture; internal set => _originalTexture = value; }
 
-        private Tile _dataTile;
+        private DualGridDataTile _dataTile;
         /// <summary>
         /// The Data Tile is a tile generated from this Dual Grid Rule Tile to populate the DataTilemap.
         /// </summary>
-        public Tile DataTile { get => _dataTile != null ? _dataTile : RefreshDataTile(); }
+        public DualGridDataTile DataTile { get => _dataTile != null ? _dataTile : RefreshDataTile(); }
 
         private DualGridTilemapModule _dualGridTilemapModule;
 
@@ -58,16 +60,47 @@ namespace skner.DualGrid
         {
             SetDataTilemap(tilemap);
 
-            base.GetTileData(position, tilemap, ref tileData);
+            var iden = Matrix4x4.identity;
+
+            tileData.sprite = m_DefaultSprite;
+            tileData.gameObject = m_DefaultGameObject;
+            tileData.colliderType = m_DefaultColliderType;
+            tileData.flags = TileFlags.LockTransform;
+            tileData.transform = iden;
+
+            bool gameObjectShouldBeInRenderTilemap = _dualGridTilemapModule == null || _dualGridTilemapModule.GameObjectOrigin == GameObjectOrigin.RenderTilemap;
+            Matrix4x4 transform = iden;
+            foreach (TilingRule rule in m_TilingRules)
+            {
+                if (RuleMatches(rule, position, tilemap, ref transform))
+                {
+                    switch (rule.m_Output)
+                    {
+                        case TilingRuleOutput.OutputSprite.Single:
+                        case TilingRuleOutput.OutputSprite.Animation:
+                            tileData.sprite = rule.m_Sprites[0];
+                            break;
+                        case TilingRuleOutput.OutputSprite.Random:
+                            int index = Mathf.Clamp(Mathf.FloorToInt(GetPerlinValue(position, rule.m_PerlinScale, 100000f) * rule.m_Sprites.Length), 0, rule.m_Sprites.Length - 1);
+                            tileData.sprite = rule.m_Sprites[index];
+                            if (rule.m_RandomTransform != TilingRuleOutput.Transform.Fixed)
+                                transform = ApplyRandomTransform(rule.m_RandomTransform, transform, rule.m_PerlinScale, position);
+                            break;
+                    }
+                    tileData.transform = transform;
+                    tileData.gameObject = gameObjectShouldBeInRenderTilemap ? rule.m_GameObject : null;
+                    break;
+                }
+            }
         }
 
         /// <summary>
         /// Refreshes the <see cref="DataTile"/> with this <see cref="DualGridRuleTile"/>'s configuration.
         /// </summary>
         /// <returns>The refreshed data tile.</returns>
-        public virtual Tile RefreshDataTile()
+        public virtual DualGridDataTile RefreshDataTile()
         {
-            if (_dataTile == null) _dataTile = ScriptableObject.CreateInstance<Tile>();
+            if (_dataTile == null) _dataTile = ScriptableObject.CreateInstance<DualGridDataTile>();
 
             _dataTile.name = this.name;
             _dataTile.colliderType = this.m_DefaultColliderType;
