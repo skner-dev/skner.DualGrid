@@ -13,7 +13,7 @@ namespace skner.DualGrid.Editor
 
         private static class Styles
         {
-            public static readonly GUIContent RenderTile = EditorGUIUtility.TrTextContent("RenderTile", "The Render Tile that will be applied in the Render Tilemap.");
+            public static readonly GUIContent RenderTile = EditorGUIUtility.TrTextContent("Dual Grid Rule Tile", "The Render Tile that will be applied in the Render Tilemap.");
             public static readonly GUIContent EnableTilemapCollider = EditorGUIUtility.TrTextContent("Enable Tilemap Collider", "If a TilemapCollider2D should be active based on the Dual Grid Rule Tile's default collider type.");
             public static readonly GUIContent GameObjectOrigin = EditorGUIUtility.TrTextContent("Game Object Origin", "Determines which tilemap the GameObjects defined in the Dual Grid Rule Tile should be in.");
         }
