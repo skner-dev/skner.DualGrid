@@ -5,6 +5,7 @@ using UnityEngine.Tilemaps;
 
 namespace skner.DualGrid.Editor
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(Tilemap))]
     public class RestrictedTilemapEditor : UnityEditor.Editor
     {

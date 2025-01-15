@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace skner.DualGrid.Editor
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(Transform))]
     public class RestrictedTransformEditor : UnityEditor.Editor
     {

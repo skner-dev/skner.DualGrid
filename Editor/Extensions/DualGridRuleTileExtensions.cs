@@ -50,7 +50,7 @@ namespace skner.DualGrid.Editor.Extensions
             }
             else
             {
-                EditorUtility.DisplayDialog("Incompatible Texture Detected", "The selected texture is not sliced in 16 pieces.\nTexture will not be applied.", "Ok");
+                EditorUtility.DisplayDialog($"{dualGridRuleTile.name} - Incompatible Texture Detected", "The selected texture is not sliced in 16 pieces.\nTexture will not be applied.", "Ok");
                 return false;
             }
         }

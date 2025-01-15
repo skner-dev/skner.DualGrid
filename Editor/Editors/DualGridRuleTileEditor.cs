@@ -1,5 +1,7 @@
 using skner.DualGrid.Editor.Extensions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -7,6 +9,7 @@ using static UnityEngine.Tilemaps.Tile;
 
 namespace skner.DualGrid.Editor
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(DualGridRuleTile), true)]
     public class DualGridRuleTileEditor : RuleTileEditor
     {
@@ -61,9 +64,16 @@ namespace skner.DualGrid.Editor
         private bool _isPreviewActive;
         private ReorderableList _tilingRulesReorderableList;
 
+        private bool _hasMultipleTargets = false;
+        private List<DualGridRuleTile> _targetDualGridRuleTiles = new();
+
         public override void OnEnable()
         {
             _targetDualGridRuleTile = (DualGridRuleTile)target;
+            _hasMultipleTargets = targets.Length > 1;
+
+            if (_hasMultipleTargets) _targetDualGridRuleTiles = targets.Cast<DualGridRuleTile>().ToList();
+            else _targetDualGridRuleTiles = new List<DualGridRuleTile>() { target as DualGridRuleTile };
 
             _isPreviewActive = EditorPrefs.GetBool(PreviewActiveStatusKey);
 
@@ -78,67 +88,84 @@ namespace skner.DualGrid.Editor
 
         public override void OnInspectorGUI()
         {
+            serializedObject.Update();
+
+            if (_hasMultipleTargets) Undo.RecordObjects(_targetDualGridRuleTiles.ToArray(), $"Updated {_targetDualGridRuleTiles.Count} Dual Grid Rule Tiles");
+            else Undo.RecordObject(_targetDualGridRuleTile, $"Updated '{_targetDualGridRuleTile.name}' Dual Grid Rule Tile");
+
             EditorGUI.BeginChangeCheck();
 
-            DrawRuleTileOriginalTexture();
-            DrawRuleTileSettings();
-            DrawRuleTileTools();
-            DrawRuleTilePreview();
-            DrawTilingRulesList();
+            var shouldContinue = DrawRuleTileOriginalTexture();
+            if (shouldContinue) shouldContinue = DrawRuleTileSettings();
+            if (shouldContinue) shouldContinue = DrawRuleTileTools();
+            if (shouldContinue) shouldContinue = DrawRuleTilePreview();
+            if (shouldContinue) shouldContinue = DrawTilingRulesList();
 
             if (EditorGUI.EndChangeCheck())
             {
-                SaveTile();
-                _targetDualGridRuleTile.RefreshDataTile();
+                SaveSelectedTiles();
+                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.RefreshDataTile());
             }
         }
 
-        protected virtual void DrawRuleTileOriginalTexture()
+        /// <returns>If the Inspector should continue the drawing pipeline.</returns>
+        protected virtual bool DrawRuleTileOriginalTexture()
         {
             EditorGUILayout.LabelField("Dual Grid Settings", EditorStyles.boldLabel);
 
-            if (_targetDualGridRuleTile.OriginalTexture == null && _targetDualGridRuleTile.m_TilingRules.Count == 0)
+            if (_targetDualGridRuleTiles.Any(dualGridRuleTile => dualGridRuleTile.OriginalTexture == null && dualGridRuleTile.m_TilingRules.Count == 0))
             {
                 DrawDragAndDropArea();
+                return false;
             }
 
             EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridRuleTiles.HasDifferentValues(dualGridRuleTile => dualGridRuleTile.OriginalTexture);
             Texture2D appliedTexture = EditorGUILayout.ObjectField(Styles.OriginalTexture, _targetDualGridRuleTile.OriginalTexture, typeof(Texture2D), false) as Texture2D;
             if (EditorGUI.EndChangeCheck())
             {
-                _targetDualGridRuleTile.TryApplyTexture2D(appliedTexture);
+                foreach (var dualGridRuleTile in _targetDualGridRuleTiles)
+                {
+                    bool wasTextureApplied = dualGridRuleTile.TryApplyTexture2D(appliedTexture);
+                    if (wasTextureApplied == false) break; // Invalid texture, stop applying to other selected tiles
+                }
             }
 
-            if (_targetDualGridRuleTile.OriginalTexture == null) return;
+            EditorGUI.showMixedValue = false;
+            if (appliedTexture == null) return false;
 
-            if (appliedTexture.GetSplitSpritesFromTexture().Count != 16)
-            {
-                EditorGUILayout.HelpBox("Selected texture is not split in exactly 16 sprites.\nPlease provide a valid texture.", MessageType.Error);
-                return;
-            }
+            return true;
         }
 
         private void DrawDragAndDropArea()
         {
-            Rect dropArea = GUILayoutUtility.GetRect(0, 100, GUILayout.ExpandWidth(true));
-            GUI.Box(dropArea, "", EditorStyles.helpBox);
-            GUI.Box(dropArea, "Drag and drop a texture\nto start creating this Dual Grid Rule Tile", EditorStyles.centeredGreyMiniLabel);
-
-            Event evt = Event.current;
-            if (evt.type == EventType.DragUpdated || evt.type == EventType.DragPerform)
+            if (_hasMultipleTargets)
             {
-                if (dropArea.Contains(evt.mousePosition))
+                EditorGUILayout.HelpBox("At least one of the selected Dual Grid Rule Tiles are missing an Original Texture.\n" +
+                    "Please select the individual empty Dual Grid Rule Tile to set the Texture.", MessageType.Error);
+            }
+            else
+            {
+                Rect dropArea = GUILayoutUtility.GetRect(0, 100, GUILayout.ExpandWidth(true));
+                GUI.Box(dropArea, "", EditorStyles.helpBox);
+                GUI.Box(dropArea, "Drag and drop a texture\nto start creating this Dual Grid Rule Tile", EditorStyles.centeredGreyMiniLabel);
+
+                Event evt = Event.current;
+                if (evt.type == EventType.DragUpdated || evt.type == EventType.DragPerform)
                 {
-                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-
-                    if (evt.type == EventType.DragPerform)
+                    if (dropArea.Contains(evt.mousePosition))
                     {
-                        DragAndDrop.AcceptDrag();
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
 
-                        foreach (UnityEngine.Object draggedObject in DragAndDrop.objectReferences)
+                        if (evt.type == EventType.DragPerform)
                         {
-                            OnDropObjectInTextureArea(draggedObject);
-                            break;
+                            DragAndDrop.AcceptDrag();
+
+                            foreach (UnityEngine.Object draggedObject in DragAndDrop.objectReferences)
+                            {
+                                OnDropObjectInTextureArea(draggedObject);
+                                break;
+                            }
                         }
                     }
                 }
@@ -149,35 +176,67 @@ namespace skner.DualGrid.Editor
         {
             if (draggedObject is Texture2D texture)
             {
-                _targetDualGridRuleTile.TryApplyTexture2D(texture);
+                foreach (var dualGridRuleTile in _targetDualGridRuleTiles)
+                {
+                    bool wasTextureApplied = dualGridRuleTile.TryApplyTexture2D(texture);
+                    if (wasTextureApplied == false) return; // Invalid texture, stop applying to other selected tiles
+                }
                 Repaint();
             }
         }
 
-        protected virtual void DrawRuleTileSettings()
+        /// <returns>If the Inspector should interrupt the drawing pipeline.</returns>
+        protected virtual bool DrawRuleTileSettings()
         {
             EditorGUILayout.LabelField("Rule Tile Settings", EditorStyles.boldLabel);
 
-            tile.m_DefaultSprite = EditorGUILayout.ObjectField(Styles.DefaultSprite, tile.m_DefaultSprite, typeof(Sprite), false) as Sprite;
-            tile.m_DefaultGameObject = EditorGUILayout.ObjectField(Styles.DefaultGameObject, tile.m_DefaultGameObject, typeof(GameObject), false) as GameObject;
-            tile.m_DefaultColliderType = (ColliderType)EditorGUILayout.EnumPopup(Styles.DefaultCollider, tile.m_DefaultColliderType);
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridRuleTiles.HasDifferentValues(dualGridRuleTile => dualGridRuleTile.m_DefaultSprite);
+            var defaultSprite = EditorGUILayout.ObjectField(Styles.DefaultSprite, _targetDualGridRuleTiles.First().m_DefaultSprite, typeof(Sprite), false) as Sprite;
+            if (EditorGUI.EndChangeCheck())
+            {
+                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.m_DefaultSprite = defaultSprite);
+            }
 
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridRuleTiles.HasDifferentValues(dualGridRuleTile => dualGridRuleTile.m_DefaultGameObject);
+            var defaultGameObject = EditorGUILayout.ObjectField(Styles.DefaultGameObject, tile.m_DefaultGameObject, typeof(GameObject), false) as GameObject;
+            if (EditorGUI.EndChangeCheck())
+            {
+                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.m_DefaultGameObject = defaultGameObject);
+            }
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridRuleTiles.HasDifferentValues(dualGridRuleTile => dualGridRuleTile.m_DefaultColliderType);
+            var defaultColliderType = (ColliderType)EditorGUILayout.EnumPopup(Styles.DefaultCollider, tile.m_DefaultColliderType);
+            if (EditorGUI.EndChangeCheck())
+            {
+                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.m_DefaultColliderType = defaultColliderType);
+            }
+
+            EditorGUI.showMixedValue = false;
             EditorGUILayout.Space();
+
+            return true;
         }
 
-        protected virtual void DrawRuleTileTools()
+        /// <returns>If the Inspector should interrupt the drawing pipeline.</returns>
+        protected virtual bool DrawRuleTileTools()
         {
             EditorGUILayout.LabelField("Tools", EditorStyles.boldLabel);
 
             if (GUILayout.Button("Apply Default GameObject to all Tile Rules"))
             {
-                _targetDualGridRuleTile.m_TilingRules.ForEach(tilingRule => tilingRule.m_GameObject = _targetDualGridRuleTile.m_DefaultGameObject);
+                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.m_TilingRules.ForEach(tilingRule => tilingRule.m_GameObject = dualGridRuleTile.m_DefaultGameObject));
             }
 
             EditorGUILayout.Space();
+
+            return true;
         }
 
-        protected virtual void DrawRuleTilePreview()
+        /// <returns>If the Inspector should interrupt the drawing pipeline.</returns>
+        protected virtual bool DrawRuleTilePreview()
         {
             EditorGUILayout.LabelField("Tilemap Preview", EditorStyles.boldLabel);
 
@@ -200,38 +259,50 @@ namespace skner.DualGrid.Editor
 
             if (_isPreviewActive)
             {
-                DualGridRuleTilePreviewer.LoadPreviewScene(_targetDualGridRuleTile);
-
-                DualGridRuleTilePreviewer.UpdateRenderTexture();
-                RenderTexture previewTexture = DualGridRuleTilePreviewer.GetRenderTexture();
-
-                if (previewTexture != null)
+                if (_hasMultipleTargets)
                 {
-                    float aspectRatio = (float)previewTexture.width / previewTexture.height;
-
-                    float desiredWidth = EditorGUIUtility.currentViewWidth;
-                    float desiredHeight = desiredWidth / aspectRatio;
-
-                    GUILayout.Box(new GUIContent(previewTexture), GUILayout.Width(desiredWidth - 22), GUILayout.Height(desiredHeight - 3));
+                    EditorGUILayout.LabelField("Preview not available when inspecting multiple Dual Grid Rule Tiles.", EditorStyles.centeredGreyMiniLabel);
                 }
                 else
                 {
-                    EditorGUILayout.LabelField("Preview not available.", EditorStyles.centeredGreyMiniLabel);
+                    DualGridRuleTilePreviewer.LoadPreviewScene(_targetDualGridRuleTile);
+
+                    DualGridRuleTilePreviewer.UpdateRenderTexture();
+                    RenderTexture previewTexture = DualGridRuleTilePreviewer.GetRenderTexture();
+
+                    if (previewTexture != null)
+                    {
+                        float aspectRatio = (float)previewTexture.width / previewTexture.height;
+
+                        float desiredWidth = EditorGUIUtility.currentViewWidth;
+                        float desiredHeight = desiredWidth / aspectRatio;
+
+                        GUILayout.Box(new GUIContent(previewTexture), GUILayout.Width(desiredWidth - 22), GUILayout.Height(desiredHeight - 3));
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("Preview not available.", EditorStyles.centeredGreyMiniLabel);
+                    }
                 }
             }
 
             EditorGUILayout.Space();
+
+            return true;
         }
 
-        protected virtual void DrawTilingRulesList()
+        /// <returns>If the Inspector should interrupt the drawing pipeline.</returns>
+        protected virtual bool DrawTilingRulesList()
         {
             EditorGUILayout.LabelField("Dual Grid Tiling Rules", EditorStyles.boldLabel);
 
             if (GUILayout.Button("Apply Automatic Rule Tiling"))
             {
-                Undo.RegisterCompleteObjectUndo(new UnityEngine.Object[] { _targetDualGridRuleTile }, $"Auto tiling Dual Grid Rule Tile '{_targetDualGridRuleTile.name}'");
-                _targetDualGridRuleTile.TryApplyTexture2D(_targetDualGridRuleTile.OriginalTexture, ignoreAutoSlicePrompt: true);
-                AutoDualGridRuleTileProvider.ApplyConfigurationPreset(ref _targetDualGridRuleTile);
+                if (_hasMultipleTargets) Undo.RegisterCompleteObjectUndo(_targetDualGridRuleTiles.ToArray(), $"Auto tiling {_targetDualGridRuleTiles.Count} Dual Grid Rule Tiles");
+                else Undo.RegisterCompleteObjectUndo(_targetDualGridRuleTile, $"Auto tiling Dual Grid Rule Tile '{_targetDualGridRuleTile.name}'");
+
+                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.TryApplyTexture2D(dualGridRuleTile.OriginalTexture, ignoreAutoSlicePrompt: true));
+                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => AutoDualGridRuleTileProvider.ApplyConfigurationPreset(ref dualGridRuleTile));
             }
 
             EditorGUILayout.Space();
@@ -239,10 +310,22 @@ namespace skner.DualGrid.Editor
             if (tile.m_TilingRules.Count != 16)
             {
                 EditorGUILayout.HelpBox($"This Dual Grid Tile has {tile.m_TilingRules.Count} rules, but only exactly 16 is supported.\nPlease apply automatic rule tiling to fix it.", MessageType.Error);
-                return;
+                return false;
             }
 
-            _tilingRulesReorderableList?.DoLayoutList();
+            if (_hasMultipleTargets) EditorGUILayout.HelpBox("Editing Tiling Rules manually is not supported when multiple Dual Grid Rule Tiles are selected", MessageType.Warning, true);
+            else _tilingRulesReorderableList?.DoLayoutList();
+
+            return true;
+        }
+
+        protected virtual void SaveSelectedTiles()
+        {
+            serializedObject.ApplyModifiedProperties();
+            _targetDualGridRuleTiles.ForEach(dualGridRuleTile => EditorUtility.SetDirty(dualGridRuleTile));
+            SceneView.RepaintAll();
+
+            _targetDualGridRuleTiles.ForEach(dualGridRuleTile => UpdateAffectedOverrideTiles(dualGridRuleTile));
         }
 
         public override void RuleMatrixOnGUI(RuleTile tile, Rect rect, BoundsInt bounds, RuleTile.TilingRule tilingRule)

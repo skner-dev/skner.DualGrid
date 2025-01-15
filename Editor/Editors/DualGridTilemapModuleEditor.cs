@@ -1,12 +1,14 @@
-﻿using skner.DualGrid.Utils;
-using System;
-using System.Text;
+﻿using skner.DualGrid.Editor.Extensions;
+using skner.DualGrid.Utils;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace skner.DualGrid.Editor
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(DualGridTilemapModule))]
     public class DualGridTilemapModuleEditor : UnityEditor.Editor
     {
@@ -18,10 +20,10 @@ namespace skner.DualGrid.Editor
             public static readonly GUIContent GameObjectOrigin = EditorGUIUtility.TrTextContent("Game Object Origin", "Determines which tilemap the GameObjects defined in the Dual Grid Rule Tile should be in.");
         }
 
-        private DualGridTilemapModule _targetComponent;
+        private DualGridTilemapModule _targetDualGridTilemapModule;
 
-        private Tilemap _dataTilemap;
-        private Tilemap _renderTilemap;
+        private bool _hasMultipleTargets = false;
+        private List<DualGridTilemapModule> _targetDualGridTilemapModules = new();
 
         private bool _showDataTileBoundaries = false;
 
@@ -43,34 +45,34 @@ namespace skner.DualGrid.Editor
             var dualGridTilemapModule = newDataTilemap.AddComponent<DualGridTilemapModule>();
             newDataTilemap.transform.parent = grid.transform;
 
-            var dualGridTilemapModuleEditor = UnityEditor.Editor.CreateEditor(dualGridTilemapModule) as DualGridTilemapModuleEditor;
-            dualGridTilemapModuleEditor.InitializeRenderTilemap();
+            InitializeRenderTilemap(dualGridTilemapModule);
 
             return dualGridTilemapModule;
         }
 
         private void OnEnable()
         {
-            if (target != null)
-                _targetComponent = (DualGridTilemapModule)target;
+            _targetDualGridTilemapModule = (DualGridTilemapModule)target;
 
-            InitializeRenderTilemap();
+            _hasMultipleTargets = targets.Length > 1;
+
+            if (_hasMultipleTargets) _targetDualGridTilemapModules = targets.Cast<DualGridTilemapModule>().ToList();
+            else _targetDualGridTilemapModules = new List<DualGridTilemapModule>() { target as DualGridTilemapModule };
+
+            _targetDualGridTilemapModules.ForEach(dualGridTilemapModule => InitializeRenderTilemap(dualGridTilemapModule));
         }
 
-        private void InitializeRenderTilemap()
+        private static void InitializeRenderTilemap(DualGridTilemapModule dualGridTilemapModule)
         {
-            if (_targetComponent == null) return;
+            if (dualGridTilemapModule == null) return;
 
-            if (_targetComponent.RenderTilemap == null)
+            if (dualGridTilemapModule.RenderTilemap == null)
             {
-                CreateRenderTilemapObject(_targetComponent);
+                CreateRenderTilemapObject(dualGridTilemapModule);
             }
 
-            _dataTilemap = _targetComponent.DataTilemap;
-            _renderTilemap = _targetComponent.RenderTilemap;
-
-            DestroyTilemapRendererInDataTilemap();
-            UpdateTilemapColliderComponents();
+            DestroyTilemapRendererInDataTilemap(dualGridTilemapModule);
+            UpdateTilemapColliderComponents(dualGridTilemapModule);
         }
 
         internal static GameObject CreateRenderTilemapObject(DualGridTilemapModule targetModule)
@@ -85,19 +87,19 @@ namespace skner.DualGrid.Editor
             return renderTilemapObject;
         }
 
-        private void DestroyTilemapRendererInDataTilemap()
+        private static void DestroyTilemapRendererInDataTilemap(DualGridTilemapModule dualGridTilemapModule)
         {
-            TilemapRenderer renderer = _targetComponent.GetComponent<TilemapRenderer>();
+            TilemapRenderer renderer = dualGridTilemapModule.GetComponent<TilemapRenderer>();
             DestroyComponentIfExists(renderer, "Dual Grid Tilemaps cannot have TilemapRenderers in the same GameObject. TilemapRenderer has been destroyed.");
         }
 
-        private void UpdateTilemapColliderComponents(bool shouldLogWarnings = true)
+        private static void UpdateTilemapColliderComponents(DualGridTilemapModule dualGridTilemapModule, bool shouldLogWarnings = true)
         {
-            TilemapCollider2D tilemapColliderFromDataTilemap = _targetComponent.DataTilemap.GetComponent<TilemapCollider2D>();
-            TilemapCollider2D tilemapColliderFromRenderTilemap = _targetComponent.RenderTilemap.GetComponent<TilemapCollider2D>();
+            TilemapCollider2D tilemapColliderFromDataTilemap = dualGridTilemapModule.DataTilemap.GetComponent<TilemapCollider2D>();
+            TilemapCollider2D tilemapColliderFromRenderTilemap = dualGridTilemapModule.RenderTilemap.GetComponent<TilemapCollider2D>();
 
             string warningMessage;
-            if (_targetComponent.EnableTilemapCollider == false)
+            if (dualGridTilemapModule.EnableTilemapCollider == false)
             {
                 warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D if not enabled in Dual Grid Tilemap Module.";
                 DestroyComponentIfExists(tilemapColliderFromDataTilemap, shouldLogWarnings ? warningMessage : null);
@@ -105,7 +107,7 @@ namespace skner.DualGrid.Editor
                 return;
             }
 
-            switch (_targetComponent.DataTile.colliderType)
+            switch (dualGridTilemapModule.DataTile.colliderType)
             {
                 case Tile.ColliderType.None:
                     warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D if Dual Grid Tile has collider type set to none.";
@@ -115,11 +117,11 @@ namespace skner.DualGrid.Editor
                 case Tile.ColliderType.Sprite:
                     warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D in the Data Tilemap if Dual Grid Tile has collider type set to Sprite.";
                     DestroyComponentIfExists(tilemapColliderFromDataTilemap, shouldLogWarnings ? warningMessage : null);
-                    if (tilemapColliderFromRenderTilemap == null) _targetComponent.RenderTilemap.gameObject.AddComponent<TilemapCollider2D>();
+                    if (tilemapColliderFromRenderTilemap == null) dualGridTilemapModule.RenderTilemap.gameObject.AddComponent<TilemapCollider2D>();
                     break;
                 case Tile.ColliderType.Grid:
                     warningMessage = "Dual Grid Tilemaps cannot have Tilemap Colliders 2D in the Render Tilemap if Dual Grid Tile has collider type set to Grid.";
-                    if (tilemapColliderFromDataTilemap == null) _targetComponent.DataTilemap.gameObject.AddComponent<TilemapCollider2D>();
+                    if (tilemapColliderFromDataTilemap == null) dualGridTilemapModule.DataTilemap.gameObject.AddComponent<TilemapCollider2D>();
                     DestroyComponentIfExists(tilemapColliderFromRenderTilemap, shouldLogWarnings ? warningMessage : null);
                     break;
                 default:
@@ -140,31 +142,47 @@ namespace skner.DualGrid.Editor
 
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("DualGridTilemapModule manages the RenderTilemap linked to the DataTilemap.", MessageType.Info);
+            if (_hasMultipleTargets) Undo.RecordObjects(_targetDualGridTilemapModules.ToArray(), $"Updated {_targetDualGridTilemapModules.Count} Dual Grid Tilemap Modules");
+            else Undo.RecordObject(_targetDualGridTilemapModule, $"Updated '{_targetDualGridTilemapModule.name}' Dual Grid Rule Tile");
 
             EditorGUI.BeginChangeCheck();
 
             EditorGUI.BeginChangeCheck();
-            _targetComponent.RenderTile = EditorGUILayout.ObjectField(Styles.RenderTile, _targetComponent.RenderTile, typeof(DualGridRuleTile), false) as DualGridRuleTile;
+            EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridTilemapModules.HasDifferentValues(dualGridTilemapModule => dualGridTilemapModule.RenderTile);
+            var renderTile = EditorGUILayout.ObjectField(Styles.RenderTile, _targetDualGridTilemapModule.RenderTile, typeof(DualGridRuleTile), false) as DualGridRuleTile;
             if (EditorGUI.EndChangeCheck())
             {
-                _targetComponent.DataTilemap.RefreshAllTiles();
-                _targetComponent.RefreshRenderTilemap();
+                foreach(var dualGridTilemapModule in _targetDualGridTilemapModules)
+                {
+                    dualGridTilemapModule.RenderTile = renderTile;
+                    dualGridTilemapModule.DataTilemap.RefreshAllTiles();
+                    dualGridTilemapModule.RefreshRenderTilemap();
+                }
             }
 
             EditorGUI.BeginChangeCheck();
-            _targetComponent.EnableTilemapCollider = EditorGUILayout.Toggle(Styles.EnableTilemapCollider, _targetComponent.EnableTilemapCollider);
+            EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridTilemapModules.HasDifferentValues(dualGridTilemapModule => dualGridTilemapModule.EnableTilemapCollider);
+            var enableTilemapCollider = EditorGUILayout.Toggle(Styles.EnableTilemapCollider, _targetDualGridTilemapModule.EnableTilemapCollider);
             if (EditorGUI.EndChangeCheck())
             {
-                UpdateTilemapColliderComponents(shouldLogWarnings: false);
+                foreach (var dualGridTilemapModule in _targetDualGridTilemapModules)
+                {
+                    dualGridTilemapModule.EnableTilemapCollider = enableTilemapCollider;
+                    UpdateTilemapColliderComponents(dualGridTilemapModule, shouldLogWarnings: false);
+                }
             }
 
             EditorGUI.BeginChangeCheck();
-            _targetComponent.GameObjectOrigin = (GameObjectOrigin)EditorGUILayout.EnumPopup(Styles.GameObjectOrigin, _targetComponent.GameObjectOrigin);
+            EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridTilemapModules.HasDifferentValues(dualGridTilemapModule => dualGridTilemapModule.GameObjectOrigin);
+            var gameObjectOrigin = (GameObjectOrigin)EditorGUILayout.EnumPopup(Styles.GameObjectOrigin, _targetDualGridTilemapModule.GameObjectOrigin);
             if (EditorGUI.EndChangeCheck())
             {
-                _targetComponent.DataTilemap.RefreshAllTiles();
-                _targetComponent.RefreshRenderTilemap();
+                foreach (var dualGridTilemapModule in _targetDualGridTilemapModules)
+                {
+                    dualGridTilemapModule.GameObjectOrigin = gameObjectOrigin;
+                    dualGridTilemapModule.DataTilemap.RefreshAllTiles();
+                    dualGridTilemapModule.RefreshRenderTilemap();
+                }
             }
 
             GUILayout.Space(5);
@@ -172,7 +190,7 @@ namespace skner.DualGrid.Editor
 
             if (EditorGUI.EndChangeCheck())
             {
-                EditorUtility.SetDirty(_targetComponent);
+                EditorUtility.SetDirty(_targetDualGridTilemapModule);
             }
 
             GUILayout.Label("Visualization Handles", EditorStyles.boldLabel);
@@ -183,40 +201,43 @@ namespace skner.DualGrid.Editor
 
         private void OnSceneGUI()
         {
-            DrawDataTileHandles();
-            DrawRenderTileHandles();
-        }
-
-        private void DrawDataTileHandles()
-        {
-            if (!_showDataTileBoundaries) return;
-
-            foreach (var position in _dataTilemap.cellBounds.allPositionsWithin)
+            foreach (var dualGridTilemapModule in _targetDualGridTilemapModules)
             {
-                if (!_dataTilemap.HasTile(position)) continue;
-
-                Vector3 tileCenter = _dataTilemap.GetCellCenterWorld(position);
-
-                Handles.color = Color.green;
-                DrawTileBoundaries(_dataTilemap, tileCenter, thickness: 3);
+                DrawDataTileHandles(dualGridTilemapModule);
+                DrawRenderTileHandles(dualGridTilemapModule);
             }
         }
 
-        private void DrawRenderTileHandles()
+        private void DrawDataTileHandles(DualGridTilemapModule dualGridTilemapModule)
+        {
+            if (!_showDataTileBoundaries) return;
+
+            foreach (var position in dualGridTilemapModule.DataTilemap.cellBounds.allPositionsWithin)
+            {
+                if (!dualGridTilemapModule.DataTilemap.HasTile(position)) continue;
+
+                Vector3 tileCenter = dualGridTilemapModule.DataTilemap.GetCellCenterWorld(position);
+
+                Handles.color = Color.green;
+                DrawTileBoundaries(dualGridTilemapModule.DataTilemap, tileCenter, thickness: 3);
+            }
+        }
+
+        private void DrawRenderTileHandles(DualGridTilemapModule dualGridTilemapModule)
         {
             if (!_showRenderTileBoundaries && !_showRenderTileConnections) return;
 
-            foreach (var renderTilePosition in _renderTilemap.cellBounds.allPositionsWithin)
+            foreach (var renderTilePosition in dualGridTilemapModule.RenderTilemap.cellBounds.allPositionsWithin)
             {
-                if (!_renderTilemap.HasTile(renderTilePosition)) continue;
+                if (!dualGridTilemapModule.RenderTilemap.HasTile(renderTilePosition)) continue;
 
-                Vector3 tileCenter = _renderTilemap.GetCellCenterWorld(renderTilePosition);
+                Vector3 tileCenter = dualGridTilemapModule.RenderTilemap.GetCellCenterWorld(renderTilePosition);
 
                 Handles.color = Color.yellow;
-                if (_showRenderTileBoundaries) DrawTileBoundaries(_renderTilemap, tileCenter, thickness: 1);
+                if (_showRenderTileBoundaries) DrawTileBoundaries(dualGridTilemapModule.RenderTilemap, tileCenter, thickness: 1);
 
                 Handles.color = Color.red;
-                if (_showRenderTileConnections) DrawRenderTileConnections(_dataTilemap, _renderTilemap, renderTilePosition, tileCenter);
+                if (_showRenderTileConnections) DrawRenderTileConnections(dualGridTilemapModule.DataTilemap, dualGridTilemapModule.RenderTilemap, renderTilePosition, tileCenter);
             }
         }
 
