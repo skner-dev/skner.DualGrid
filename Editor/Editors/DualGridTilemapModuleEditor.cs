@@ -193,10 +193,16 @@ namespace skner.DualGrid.Editor
                 EditorUtility.SetDirty(_targetDualGridTilemapModule);
             }
 
+            EditorGUI.BeginChangeCheck();
             GUILayout.Label("Visualization Handles", EditorStyles.boldLabel);
             _showDataTileBoundaries = EditorGUILayout.Toggle("Data Tile Boundaries", _showDataTileBoundaries);
             _showRenderTileBoundaries = EditorGUILayout.Toggle("Render Tile Boundaries", _showRenderTileBoundaries);
             _showRenderTileConnections = EditorGUILayout.Toggle("Render Tile Connections", _showRenderTileConnections);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                SceneView.RepaintAll();
+            }
         }
 
         private void OnSceneGUI()
