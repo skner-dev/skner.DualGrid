@@ -1,4 +1,6 @@
 ﻿using skner.DualGrid.Utils;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -19,7 +21,6 @@ namespace skner.DualGrid.Editor.Extensions
             dualGridTilemapModule.UpdatePreviewRenderTiles(position);
         }
 
-
         public static void UpdatePreviewRenderTiles(this DualGridTilemapModule dualGridTilemapModule, Vector3Int previewDataTilePosition)
         {
             bool hasPreviewDataTile = dualGridTilemapModule.DataTilemap.HasEditorPreviewTile(previewDataTilePosition);
@@ -38,6 +39,26 @@ namespace skner.DualGrid.Editor.Extensions
             }
         }
 
+        public static void UpdateAllPreviewRenderTiles(this DualGridTilemapModule dualGridTilemapModule)
+        {
+            foreach (var position in dualGridTilemapModule.DataTilemap.cellBounds.allPositionsWithin)
+            {
+                dualGridTilemapModule.UpdatePreviewRenderTiles(position);
+            }
+        }
+
+        public static void ClearAllPreviewTiles(this DualGridTilemapModule dualGridTilemapModule)
+        {
+            foreach (var position in dualGridTilemapModule.DataTilemap.cellBounds.allPositionsWithin)
+            {
+                if (dualGridTilemapModule.DataTilemap.HasEditorPreviewTile(position))
+                {
+                    dualGridTilemapModule.DataTilemap.SetEditorPreviewTile(position, null);
+                    dualGridTilemapModule.UpdatePreviewRenderTiles(position);
+                }
+            }
+        }
+
         private static void SetPreviewRenderTile(DualGridTilemapModule dualGridTilemapModule, Vector3Int previewRenderTilePosition)
         {
             dualGridTilemapModule.RenderTilemap.SetEditorPreviewTile(previewRenderTilePosition, dualGridTilemapModule.RenderTile);
@@ -48,18 +69,6 @@ namespace skner.DualGrid.Editor.Extensions
         {
             dualGridTilemapModule.RenderTilemap.SetEditorPreviewTile(previewRenderTilePosition, null);
             dualGridTilemapModule.RenderTilemap.RefreshTile(previewRenderTilePosition);
-        }
-
-        internal static void ClearAllPreviewTiles(this DualGridTilemapModule dualGridTilemapModule)
-        {
-            foreach (var position in dualGridTilemapModule.DataTilemap.cellBounds.allPositionsWithin)
-            {
-                if (dualGridTilemapModule.DataTilemap.HasEditorPreviewTile(position))
-                {
-                    dualGridTilemapModule.DataTilemap.SetEditorPreviewTile(position, null);
-                    dualGridTilemapModule.UpdatePreviewRenderTiles(position);
-                }
-            }
         }
 
     }

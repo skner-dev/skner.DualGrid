@@ -162,14 +162,9 @@ namespace skner.DualGrid.Editor
         {
             if (!ShowFloodFillPreview) return;
 
-            // Determines what cell to use in flood fill
-            var cell = brush.cells[0];
-            var validFloodFillTile = cell.tile != null;
-            var floodFillTile = validFloodFillTile ? _previewTile : _emptyPreviewTile;
-
             // Applies flood fill to Dual Grid Tilemap
-            dualGridTilemapModule.DataTilemap.EditorPreviewFloodFill(position, floodFillTile);
-            dualGridTilemapModule.RefreshRenderTilemap();
+            dualGridTilemapModule.DataTilemap.EditorPreviewFloodFill(position, _previewTile);
+            dualGridTilemapModule.UpdateAllPreviewRenderTiles();
 
             // Set floodfill bounds as tilemap bounds
             var bounds = new BoundsInt(position, Vector3Int.one);

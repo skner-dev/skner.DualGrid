@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using static UnityEngine.Tilemaps.Tile;
 
 namespace skner.DualGrid.Editor
@@ -190,12 +191,15 @@ namespace skner.DualGrid.Editor
         {
             EditorGUILayout.LabelField("Rule Tile Settings", EditorStyles.boldLabel);
 
+            var shouldUpdateAffectedModules = false;
+
             EditorGUI.BeginChangeCheck();
             EditorGUI.showMixedValue = _hasMultipleTargets && _targetDualGridRuleTiles.HasDifferentValues(dualGridRuleTile => dualGridRuleTile.m_DefaultSprite);
             var defaultSprite = EditorGUILayout.ObjectField(Styles.DefaultSprite, _targetDualGridRuleTiles.First().m_DefaultSprite, typeof(Sprite), false) as Sprite;
             if (EditorGUI.EndChangeCheck())
             {
                 _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.m_DefaultSprite = defaultSprite);
+                shouldUpdateAffectedModules = true;
             }
 
             EditorGUI.BeginChangeCheck();
@@ -204,6 +208,7 @@ namespace skner.DualGrid.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.m_DefaultGameObject = defaultGameObject);
+                shouldUpdateAffectedModules = true;
             }
 
             EditorGUI.BeginChangeCheck();
@@ -212,10 +217,25 @@ namespace skner.DualGrid.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.m_DefaultColliderType = defaultColliderType);
+                shouldUpdateAffectedModules = true;
             }
 
             EditorGUI.showMixedValue = false;
             EditorGUILayout.Space();
+
+            if (shouldUpdateAffectedModules)
+            {
+                // Update all Tilemap using updated Dual Grid Rule Tiles
+                var dualGridModules = UnityEngine.Object.FindObjectsByType<DualGridTilemapModule>(FindObjectsSortMode.None);
+                foreach (var module in dualGridModules)
+                {
+                    if (_targetDualGridRuleTiles.Contains(module.RenderTile))
+                    {
+                        DualGridTilemapModuleEditor.UpdateTilemapColliderComponents(module, shouldLogWarnings: false);
+                        module.RefreshRenderTilemap();
+                    }
+                }
+            }
 
             return true;
         }
