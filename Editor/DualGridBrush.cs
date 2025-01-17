@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Codice.Client.BaseCommands;
+using System.Collections.Generic;
 using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -36,6 +37,18 @@ namespace skner.DualGrid.Editor
             else
             {
                 base.BoxErase(gridLayout, brushTarget, bounds);
+            }
+        }
+
+        public override void FloodFill(GridLayout gridLayout, GameObject brushTarget, Vector3Int position)
+        {
+            if (brushTarget.TryGetComponent(out DualGridTilemapModule dualGridTilemapModule))
+            {
+                dualGridTilemapModule.DataTilemap.FloodFill(position, dualGridTilemapModule.DataTile);
+            }
+            else
+            {
+                base.FloodFill(gridLayout, brushTarget, position);
             }
         }
 

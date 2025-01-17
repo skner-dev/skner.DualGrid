@@ -105,7 +105,11 @@ namespace skner.DualGrid
             RenderTilemap.ClearAllTiles();
             foreach (var position in DataTilemap.cellBounds.allPositionsWithin)
             {
-                if (DataTilemap.HasTile(position)) RefreshRenderTiles(position);
+                if (DataTilemap.HasTile(position))
+                {
+                    DataTilemap.SetTile(position, DataTile);
+                    RefreshRenderTiles(position);
+                }
             }
         }
 

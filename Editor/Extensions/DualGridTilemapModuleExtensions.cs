@@ -24,11 +24,11 @@ namespace skner.DualGrid.Editor.Extensions
         public static void UpdatePreviewRenderTiles(this DualGridTilemapModule dualGridTilemapModule, Vector3Int previewDataTilePosition)
         {
             bool hasPreviewDataTile = dualGridTilemapModule.DataTilemap.HasEditorPreviewTile(previewDataTilePosition);
-            bool isPreviewDataTileInvisible = dualGridTilemapModule.DataTilemap.GetEditorPreviewTile<Tile>(previewDataTilePosition) is Tile previewTile && previewTile.sprite == null;
+            bool isPreviewDataTileVisible = dualGridTilemapModule.DataTilemap.GetEditorPreviewTile<DualGridPreviewTile>(previewDataTilePosition) is DualGridPreviewTile previewTile && previewTile.IsFilled;
 
             foreach (Vector3Int renderTilePosition in DualGridUtils.GetRenderTilePositions(previewDataTilePosition))
             {
-                if (hasPreviewDataTile && !isPreviewDataTileInvisible)
+                if (hasPreviewDataTile && isPreviewDataTileVisible)
                 {
                     SetPreviewRenderTile(dualGridTilemapModule, renderTilePosition);
                 }
@@ -49,14 +49,8 @@ namespace skner.DualGrid.Editor.Extensions
 
         public static void ClearAllPreviewTiles(this DualGridTilemapModule dualGridTilemapModule)
         {
-            foreach (var position in dualGridTilemapModule.DataTilemap.cellBounds.allPositionsWithin)
-            {
-                if (dualGridTilemapModule.DataTilemap.HasEditorPreviewTile(position))
-                {
-                    dualGridTilemapModule.DataTilemap.SetEditorPreviewTile(position, null);
-                    dualGridTilemapModule.UpdatePreviewRenderTiles(position);
-                }
-            }
+            dualGridTilemapModule.DataTilemap.ClearAllEditorPreviewTiles();
+            dualGridTilemapModule.RenderTilemap.ClearAllEditorPreviewTiles();
         }
 
         private static void SetPreviewRenderTile(DualGridTilemapModule dualGridTilemapModule, Vector3Int previewRenderTilePosition)
