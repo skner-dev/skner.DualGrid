@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.0.0] - 2025-01-17
+
+- Introduced Dual Grid Tilemap Preview
+    - A preview of any Dual Grid Rule Tile is available in its inspector window
+    - It provides real-time visual feedback of any changes made to the Dual Grid Rule Tile
+- Introduced previewing when editing a Dual Grid Tilemap
+    - A tile preview is now visible in Scene View when using tilemap tools to edit the tilemap
+- Added Unity Undo Api integration will all (or most) Dual Grid interactions
+- Improved Inspector Behavior for Dual Grid Rule Tiles
+    - Added the original texture to Dual Grid Rule Tiles
+    - Added buttons to help with managing Dual Grid Rule Tiles
+    - Added special inspector view when Dual Grid Rule Tile is not yet created
+    - Improved Tiling Rules List
+    - Improved inspector labels and tooltips
+- Added multi object editing for Dual Grid Rule Tiles and Dual Grid Tilemap Modules
+- Removed dependency on tile palettes
+    - It's now possible to paint Dual Grid Tilemaps without setting up a placeholder tile and tile palette.
+- Added automatic tilemap collider configuration:
+    - If the collider type is Sprite, the TilemapCollider2D is set in the Render Tilemap
+    - If the collider type is Grid, the TilemapCollider2D is set in the Data Tilemap
+- Added support for GameObjects in the Dual Grid Tilemap
+    - It's possible to set GameObject for the DataTile and associated RenderTiles
+    - The Dual Grid Tilemap Module controls what GameObjects are used
+- Introduced visualization Handles for Dual Grid Tilemaps
+- Fixed issue with Unity's Tile lifecycle that would cause some _more_ corners to be malformed
+- Fixed an issue with unhandled exceptions when no neighbour rule was defined
+- Removed most restrictions when handling Tilemaps and TilemapRenderers
+- Added compatibility with Unity 2021.3
+
 ## [1.0.3] - 2025-01-03
 
 - Fixed issue [#5](https://github.com/skner-dev/DualGrid/issues/5): malformed bottom left corner render tile

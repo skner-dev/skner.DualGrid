@@ -34,9 +34,9 @@ If we actually join the tiles with some visual guidelines for the data tile, it 
 ![](Images/combined-render-tile-example.png)
 
 In the above screenshot, we have some visual guidelines: 
-- ⚪ The light gray lines that represent the __Data Tilemap__. 
-- 🔵 The blue outline represents the ___filled_ Data Tilemap__.
-- 🟢 The green outlines represent the ___filled_ Render Tilemap__.
+- 🟢 The green square that represent a __Data Tile__. 
+- 🟡 The 4 yellow squares represent __Render Tiles__.
+- 🔴 The red arrows represent the __data neighbours__ for each __Render Tile__.
 
 We paint a single tile in the __Data Tilemap__ and 4 tiles are used to visually represent it in the __Render Tilemap__. By offsetting the __Render Tilemap__ by half a unit, we get this nice overlap, where each Render tile represents the intersection of 4 Data tiles.
 
@@ -80,6 +80,8 @@ With this, apply the changes and your tilesheet is ready:
 ‎ ‎ ‎ ‎ 
 ![](Images/ready-tilesheet-explorer.png)
 
+Ensure that the names of each split sprite ends with an '_' followed by a number. Do not change these names, otherwise the automatic tiling process will not work as intended.
+
 ### Creating the Dual Grid Rule Tile
 
 This package automatically creates the Dual Grid Rule Tile asset. Simply right-click on the ready tilesheet and click Create -> 2D -> Tiles -> Dual Grid Rule Tile. 
@@ -93,6 +95,8 @@ By clicking yes, the system will automatically populate the tiling rules and out
 ![](Images/dual-grid-rule-tile-example.png)
 
 Note: If you have any wrong tiling rules it may happen when the slice operation was not performed __exactly__ as described here.
+
+Make use of the built-in preview to ensure your tilemap is properly configured.
 
 ## The Dual Grid Tilemap
 
@@ -110,9 +114,13 @@ In the newly created _DataTilemap_ object, there's the __Dual Grid Tilemap Modul
 
 ![](Images/dual-grid-tilemap-module.png)
 
-And now you can paint over the __Data Tilemap__ and magic will take care of the rest!
+And now you can paint over the __Data Tilemap__ and magic will take care of the rest! You don't need to have a Tile Palette setup for it to work either!
 
 ![](Images/dual-grid-tilemap-usage.gif)
+
+## Next steps
+
+Find documentation on the usage and configuration of more advanced features on the dedicated [Dual Grid Tilemap Advanced Features](dual-grid-tilemap-advanced-features.md) page.
 
 ## Multiple tilemaps
 

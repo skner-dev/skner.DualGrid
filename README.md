@@ -24,7 +24,7 @@ These are the big reasons (in my view) why using this approach is powerful:
 - 🚀 __Scalability__: Create all tilemap combinations with only 16 tiles, saving a lot of work.
 - ✨ __Corner design flexibility__: Fully round corners not possible with traditional tilemap structures.
 
-I won't go into detail here, because this concept is already very well explained:
+To learn more about how this technique works, which I recommend, check my [user guide](Documentation~/user-guide.md), or these useful resources:
 
 - [Jess Hammer's Youtube Dual-Grid Tutorial](https://youtu.be/jEWFSv3ivTg)
 - [Oskar Stålberg's Twitter Post](https://x.com/OskSta/status/1448248658865049605)
@@ -40,15 +40,17 @@ If you're looking for quick step-by-step usage instructions, there's also a [che
 
 ## Dependencies
 
-This library depends on [Unity.2D.Tilemap.Extras](https://docs.unity3d.com/Packages/com.unity.2d.tilemap.extras@4.1/manual/index.html). It was tested using version 4.0.2, which comes pre-built when a new 2D Universal Render Pipeline Project is created.
+This library depends on:
+- [Unity 2D Tilemap Extras 3.1.2](https://docs.unity3d.com/Packages/com.unity.2d.tilemap.extras@3.1/manual/index.html)
+- [Unity 2D Tilemap Editor 1.0.0](https://docs.unity3d.com/Packages/com.unity.2d.tilemap@1.0/manual/index.html) 
 
-This package is compatible with Unity 2022.1+.
+This package is compatible with __Unity 2021.3__ or newer.
 
 ## Author's note
 
 I knew about the Dual Grid system before, but seeing [Jess Hammer's implementation](https://github.com/jess-hammer/dual-grid-tilemap-system-unity) inspired me to use my programming abilities to make my own implementation, as I couldn't find more anywhere. 
 
-Everything is open source and I'll be releasing it in the Unity Asset Store __for free__ so anyone can readily use it without having to get it from Git. I'm making this available now because Unity Asset Store submissions are excruciatingly long.
+Everything is open source and it's also available in the Unity Asset Store __for free__ so anyone can readily use it without having to get it from Git.
 
 You can reach me at sknerdev@outlook.com with suggestions or feedback. 
 

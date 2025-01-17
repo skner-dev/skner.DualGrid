@@ -55,3 +55,75 @@ Click on GameObject -> 2D Object -> Tilemap -> Dual Grid Tilemap.
 #### 2. Assign the Dual Grid Rule Tile to the Tilemap
 
 Go to the newly created Grid -> Data Tilemap. In the Dual Grid Tilemap Module, drag and drog a Dual Grid Rule Tile.
+
+## Set Colliders in a Dual Grid Tilemap
+
+### Requirements:
+
+- A functional [Dual Grid Tilemap Module](#create-a-working-dual-grid-tilemap);
+
+### Steps:
+
+#### 1. Set the collider type in the Dual Grid Rule Tile
+
+Go to the respective Dual Grid Rule Tile.
+
+Set the collider to the desired type:
+
+![](Images/dual-grid-rule-tile-collider.png)
+
+#### 2. Enable Tilemap Colliders in the Dual Grid Tilemap Module
+
+Go to the created Dual Grid Tilemap Module.
+
+Enable the Tilemap Colliders:
+
+![](Images/dual-grid-tilemap-module-collider.png)
+
+## Set Data Tilemap GameObjects in a Dual Grid Tilemap
+
+### Requirements:
+
+- A functional [Dual Grid Tilemap Module](#create-a-working-dual-grid-tilemap);
+
+### Steps:
+
+#### 1. Set the GameObject in the Dual Grid Rule Tile
+
+Go to the respective Dual Grid Rule Tile.
+
+Set the GameObject in Rule Tile Settings:
+
+![](Images/dual-grid-rule-tile-game-object.png)
+
+#### 2. Set the Game Object Origin to Data Tilemap in the Dual Grid Tilemap Module
+
+Go to the created Dual Grid Tilemap Module.
+
+Set the field 'Game Object Origin' to 'Data Tilemap':
+
+![](Images/dual-grid-tilemap-module-game-object.png)
+
+## Set Render Tilemap GameObjects in a Dual Grid Tilemap
+
+### Requirements:
+
+- A functional [Dual Grid Tilemap Module](#create-a-working-dual-grid-tilemap);
+
+### Steps:
+
+#### 1. Set the GameObjects in the Dual Grid Rule Tile
+
+Go to the respective Dual Grid Rule Tile.
+
+For each Dual Grid Tiling Rule, set the Game Object:
+
+![](Images/dual-grid-rule-tile-tiling-rule-game-object.png)
+
+#### 2. Set the Game Object Origin to Render Tilemap in the Dual Grid Tilemap Module
+
+Go to the created Dual Grid Tilemap Module.
+
+Set the field 'Game Object Origin' to 'Render Tilemap':
+
+![](Images/dual-grid-tilemap-module-game-object.png)
