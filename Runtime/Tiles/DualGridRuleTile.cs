@@ -142,8 +142,14 @@ namespace skner.DualGrid
             int neighborIndex = rule.GetNeighborIndex(dataTileOffset);
             if (neighborIndex == -1) return true; // If no neighbor is defined, it means it matches with anything.
 
+            // Compiler condition ensures that EditorPreviewTiles are only considered when running inside the Unity Editor
+#if UNITY_EDITOR
             var neighborDataTile = _dataTilemap.GetEditorPreviewTile(dataTilePosition);
             if (neighborDataTile == null) neighborDataTile = _dataTilemap.GetTile(dataTilePosition);
+#else
+            var neighborDataTile = _dataTilemap.GetTile(dataTilePosition);
+#endif
+
             return RuleMatch(rule.m_Neighbors[neighborIndex], neighborDataTile);
         }
 
