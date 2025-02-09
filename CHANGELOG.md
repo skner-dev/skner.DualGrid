@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2025-02-09
+
+- Fixed a build issue caused by misusage of EditorPreviewTiles outside of the Unity Editor runtime
+
 ## [2.0.0] - 2025-01-17
 
 - Introduced Dual Grid Tilemap Preview
