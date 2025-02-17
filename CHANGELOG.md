@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2] - 2025-02-17
+
+- Removed unnecessary usings which could cause compilation issues with some users
+
 ## [2.0.1] - 2025-02-09
 
 - Fixed a build issue caused by misusage of EditorPreviewTiles outside of the Unity Editor runtime
