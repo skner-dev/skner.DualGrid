@@ -18,7 +18,7 @@ namespace skner.DualGrid.Editor
 
             SerializedProperty animationFrameRate = serializedObject.FindProperty("m_AnimationFrameRate");
             SerializedProperty color = serializedObject.FindProperty("m_Color");
-            
+
             EditorGUILayout.PropertyField(animationFrameRate, new GUIContent("Animation Frame Rate"));
             EditorGUILayout.PropertyField(color, new GUIContent("Color"));
 

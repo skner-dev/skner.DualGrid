@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using static UnityEngine.Tilemaps.Tile;
 
 namespace skner.DualGrid.Editor

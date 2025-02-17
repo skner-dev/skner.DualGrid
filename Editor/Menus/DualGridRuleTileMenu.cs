@@ -1,9 +1,6 @@
 ﻿using skner.DualGrid.Editor.Extensions;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
-using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
 
 namespace skner.DualGrid.Editor

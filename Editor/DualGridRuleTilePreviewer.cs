@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using UnityEditor.SceneManagement;
+﻿using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
@@ -127,7 +126,7 @@ namespace skner.DualGrid.Editor
         private static void PaintSampleTiles(DualGridTilemapModule previewDualGridTilemapModule)
         {
             var tile = ScriptableObject.CreateInstance<Tile>();
-            
+
             previewDualGridTilemapModule.DataTilemap.ClearAllTiles();
 
             // Two dots
