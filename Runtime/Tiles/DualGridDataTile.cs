@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace skner.DualGrid
 {
+    [Serializable]
     public class DualGridDataTile : Tile
     {
 

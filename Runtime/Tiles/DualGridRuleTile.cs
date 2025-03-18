@@ -25,11 +25,25 @@ namespace skner.DualGrid
         private Texture2D _originalTexture;
         public Texture2D OriginalTexture { get => _originalTexture; internal set => _originalTexture = value; }
 
+        [SerializeField]
+        [HideInInspector]
         private DualGridDataTile _dataTile;
         /// <summary>
         /// The Data Tile is a tile generated from this Dual Grid Rule Tile to populate the DataTilemap.
         /// </summary>
-        public DualGridDataTile DataTile { get => _dataTile != null ? _dataTile : RefreshDataTile(); }
+        public DualGridDataTile DataTile
+        {
+            get
+            {
+                if (_dataTile == null)
+                {
+                    Debug.LogError($"The DualGridRuleTile {name} does not have an associated Data Tile. If this Asset was created in a previous version of DualGrid, update or re-create the Asset to potentially fix this error.", this);
+                    throw new ArgumentNullException($"The DualGridRuleTile {name} does not have an associated Data Tile.");
+                }
+
+                return _dataTile;
+            }
+        }
 
         private DualGridTilemapModule _dualGridTilemapModule;
 
@@ -102,7 +116,6 @@ namespace skner.DualGrid
         {
             if (_dataTile == null) _dataTile = ScriptableObject.CreateInstance<DualGridDataTile>();
 
-            _dataTile.name = this.name;
             _dataTile.colliderType = this.m_DefaultColliderType;
             _dataTile.gameObject = this.m_DefaultGameObject;
 

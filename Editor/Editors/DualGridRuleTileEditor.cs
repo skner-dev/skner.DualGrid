@@ -104,7 +104,19 @@ namespace skner.DualGrid.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 SaveSelectedTiles();
-                _targetDualGridRuleTiles.ForEach(dualGridRuleTile => dualGridRuleTile.RefreshDataTile());
+
+                foreach (var dualGridRuleTile in _targetDualGridRuleTiles)
+                {
+                    var dualGridDataTile = dualGridRuleTile.RefreshDataTile();
+
+                    // Backwards compatibility: saves DualGridDataTile if not saved already
+                    if (!AssetDatabase.Contains(dualGridDataTile))
+                    {
+                        dualGridDataTile.name = "DualGridDataTile";
+                        AssetDatabase.AddObjectToAsset(dualGridDataTile, dualGridRuleTile);
+                        AssetDatabase.SaveAssets();
+                    }
+                }
             }
         }
 

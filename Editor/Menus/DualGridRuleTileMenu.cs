@@ -29,6 +29,11 @@ namespace skner.DualGrid.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
+            var newDataTile = newRuleTile.RefreshDataTile();
+            newDataTile.name = isSelectedObjectTexture2d ? selectedTexture.name + "_DualGridDataTile" : "DualGridDataTile";
+            AssetDatabase.AddObjectToAsset(newDataTile, newRuleTile);
+            AssetDatabase.SaveAssets();
+
             Selection.activeObject = newRuleTile;
         }
 
