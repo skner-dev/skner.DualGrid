@@ -52,6 +52,6 @@ I knew about the Dual Grid system before, but seeing [Jess Hammer's implementati
 
 Everything is open source and it's also available in the Unity Asset Store __for free__ so anyone can readily use it without having to get it from Git.
 
-You can reach me at sknerdev@outlook.com with suggestions or feedback. 
+You can reach me at sknerdev@protonmail.com with suggestions or feedback. 
 
 Thanks for reading.
