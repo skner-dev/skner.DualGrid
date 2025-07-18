@@ -130,21 +130,6 @@ namespace skner.DualGrid
             }
         }
 
-        /// <summary>
-        /// Refreshes the <see cref="DataTile"/> with this <see cref="RenderTile"/>'s configuration.
-        /// </summary>
-        /// <returns>The refreshed data tile.</returns>
-        public virtual DualGridDataTile GenerateDataTile()
-        {
-            var dataTile = ScriptableObject.CreateInstance<DualGridDataTile>();
-
-            dataTile.name = RenderTile.name;
-            dataTile.colliderType = RenderTile.m_DefaultColliderType;
-            dataTile.gameObject = RenderTile.m_DefaultGameObject;
-
-            return dataTile;
-        }
-
         private void SetRenderTile(Vector3Int renderTilePosition)
         {
             if (!RenderTilemap.HasTile(renderTilePosition))
@@ -159,7 +144,7 @@ namespace skner.DualGrid
 
         private void UnsetRenderTile(Vector3Int renderTilePosition)
         {
-            if (!IsInUseByDataTilemap(renderTilePosition) && RenderTilemap.HasTile(renderTilePosition))
+            if (RenderTilemap.HasTile(renderTilePosition) && !IsInUseByDataTilemap(renderTilePosition))
             {
                 RenderTilemap.SetTile(renderTilePosition, null);
             }
