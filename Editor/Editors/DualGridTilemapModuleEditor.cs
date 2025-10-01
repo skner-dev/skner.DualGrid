@@ -152,7 +152,7 @@ namespace skner.DualGrid.Editor
             var renderTile = EditorGUILayout.ObjectField(Styles.RenderTile, _targetDualGridTilemapModule.RenderTile, typeof(DualGridRuleTile), false) as DualGridRuleTile;
             if (EditorGUI.EndChangeCheck())
             {
-                foreach(var dualGridTilemapModule in _targetDualGridTilemapModules)
+                foreach (var dualGridTilemapModule in _targetDualGridTilemapModules)
                 {
                     dualGridTilemapModule.RenderTile = renderTile;
                     dualGridTilemapModule.DataTilemap.RefreshAllTiles();
@@ -253,10 +253,13 @@ namespace skner.DualGrid.Editor
 
             Handles.DrawSolidDisc(tileCenter, Vector3.forward, radius: 0.05f);
 
-            Vector3 topLeft = tileCenter + new Vector3(-tilemap.cellSize.x / 2, tilemap.cellSize.y / 2, 0);
-            Vector3 topRight = tileCenter + new Vector3(tilemap.cellSize.x / 2, tilemap.cellSize.y / 2, 0);
-            Vector3 bottomLeft = tileCenter + new Vector3(-tilemap.cellSize.x / 2, -tilemap.cellSize.y / 2, 0);
-            Vector3 bottomRight = tileCenter + new Vector3(tilemap.cellSize.x / 2, -tilemap.cellSize.y / 2, 0);
+            var squareSizeX = tilemap.cellSize.x * tilemap.transform.lossyScale.x;
+            var squareSizeY = tilemap.cellSize.y * tilemap.transform.lossyScale.y;
+
+            Vector3 topLeft = tileCenter + new Vector3(-squareSizeX / 2, squareSizeY / 2, 0);
+            Vector3 topRight = tileCenter + new Vector3(squareSizeX / 2, squareSizeY / 2, 0);
+            Vector3 bottomLeft = tileCenter + new Vector3(-squareSizeX / 2, -squareSizeY / 2, 0);
+            Vector3 bottomRight = tileCenter + new Vector3(squareSizeX / 2, -squareSizeY / 2, 0);
 
             Handles.DrawLine(topLeft, topRight, thickness);
             Handles.DrawLine(topRight, bottomRight, thickness);
