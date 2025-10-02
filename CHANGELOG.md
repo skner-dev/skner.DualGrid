@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.4] - 2025-10-02
+
+- Optimized RenderTilemap refresh callbacks 
+- Updated samples with more visually cohesive tileset textures
+- Updated DualGridTilemap visual handles to react to tilemap's scale
+
+## [2.0.3] - 2025-05-24
+
+- Fixed issue [#7](https://github.com/skner-dev/DualGrid/issues/7): restricted transform component not using default inspector view
+
 ## [2.0.2] - 2025-02-17
 
 - Removed unnecessary usings which could cause compilation issues with some users
